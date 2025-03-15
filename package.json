@@ -1,7 +1,7 @@
 {
   "name": "create-devi",
   "version": "1.6.0",
-  "description": "",
+  "description": "DEVI CLI - A tool to set up React projects with Vite, Tailwind CSS, and ShadCN UI.",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -11,8 +11,16 @@
     "build": "echo 'No build needed'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "cli",
+    "create",
+    "react",
+    "vite",
+    "tailwind",
+    "shadcn",
+    "setup"
+  ],
+  "author": "Your Name",
   "license": "ISC",
   "dependencies": {
     "chalk": "^5.4.1",
@@ -21,5 +29,9 @@
     "react-full-setup": "^1.0.0",
     "readline-sync": "^1.4.10",
     "shelljs": "^0.9.1"
+  },
+  "packageManager": "npm@9.0.0",
+  "publishConfig": {
+    "access": "public"
   }
 }
