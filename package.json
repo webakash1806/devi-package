@@ -1,11 +1,11 @@
 {
-  "name": "react-full-setup",
-  "version": "1.3.0",
+  "name": "create-devi",
+  "version": "1.4.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "react-full-setup": "index.js"
+    "create-devi": "index.js"
   },
   "scripts": {
     "build": "echo 'No build needed'",
