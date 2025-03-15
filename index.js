@@ -8,7 +8,7 @@ import fs from "fs";
 
 const program = new Command();
 
-program.version("1.6.0").action(async () => {
+program.version("1.7.0").action(async () => {
   console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
   // Ask for project name
