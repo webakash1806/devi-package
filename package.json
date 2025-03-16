@@ -1,6 +1,6 @@
 {
   "name": "create-devi",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "DEVI CLI - A tool to set up React projects with Vite, Tailwind CSS, and ShadCN UI.",
   "main": "index.ts",
   "type": "module",
