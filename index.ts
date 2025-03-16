@@ -4,58 +4,58 @@ import { execSync } from "child_process";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { Command } from "commander";
-import fs from "fs";
+import * as fs from "fs";
 
 const program = new Command();
 
 program.version("1.8.0").action(async () => {
-  console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
+    console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
-  const { projectName }: { projectName: string } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "projectName",
-      message: "Enter your project name:",
-      validate: (input: string) => (input ? true : "Project name cannot be empty!"),
-    },
-  ]);
-
-  try {
-    console.log(chalk.blue(`\n📂 Creating project: ${projectName}...`));
-
-    const { variant }: { variant: "react" | "react-ts" } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "variant",
-        message: "Choose a variant:",
-        choices: [
-          { name: "JavaScript", value: "react" },
-          { name: "TypeScript", value: "react-ts" },
-        ],
-      },
+    const { projectName }: { projectName: string } = await inquirer.prompt([
+        {
+            type: "input",
+            name: "projectName",
+            message: "Enter your project name:",
+            validate: (input: string) => (input ? true : "Project name cannot be empty!"),
+        },
     ]);
 
-    execSync(`npm create vite@latest ${projectName} -- --template ${variant}`, { stdio: "inherit" });
+    try {
+        console.log(chalk.blue(`\n📂 Creating project: ${projectName}...`));
 
-    process.chdir(projectName);
+        const { variant }: { variant: "react" | "react-ts" } = await inquirer.prompt([
+            {
+                type: "list",
+                name: "variant",
+                message: "Choose a variant:",
+                choices: [
+                    { name: "JavaScript", value: "react" },
+                    { name: "TypeScript", value: "react-ts" },
+                ],
+            },
+        ]);
 
-    console.log(chalk.blue("📦 Installing dependencies..."));
-    execSync(`npm install`, { stdio: "inherit" });
+        execSync(`npm create vite@latest ${projectName} -- --template ${variant}`, { stdio: "inherit" });
 
-    console.log(chalk.blue("🎨 Installing Tailwind CSS & Vite plugin..."));
-    execSync(`npm install -D tailwindcss @tailwindcss/vite postcss autoprefixer`, { stdio: "inherit" });
+        process.chdir(projectName);
 
-    if (fs.existsSync("tsconfig.json")) {
-      console.log(chalk.blue("📝 Installing TypeScript types for Node.js..."));
-      execSync(`npm install --save-dev @types/node`, { stdio: "inherit" });
-    }
+        console.log(chalk.blue("📦 Installing dependencies..."));
+        execSync(`npm install`, { stdio: "inherit" });
 
-    const viteConfig = fs.existsSync("vite.config.ts") ? "vite.config.ts" : "vite.config.js";
-    console.log(chalk.yellow(`\n⚙️ Configuring Vite with Tailwind plugin in ${viteConfig}...`));
+        console.log(chalk.blue("🎨 Installing Tailwind CSS & Vite plugin..."));
+        execSync(`npm install -D tailwindcss @tailwindcss/vite postcss autoprefixer`, { stdio: "inherit" });
 
-    fs.writeFileSync(
-      viteConfig,
-      `import { defineConfig } from 'vite';
+        if (fs.existsSync("tsconfig.json")) {
+            console.log(chalk.blue("📝 Installing TypeScript types for Node.js..."));
+            execSync(`npm install --save-dev @types/node`, { stdio: "inherit" });
+        }
+
+        const viteConfig = fs.existsSync("vite.config.ts") ? "vite.config.ts" : "vite.config.js";
+        console.log(chalk.yellow(`\n⚙️ Configuring Vite with Tailwind plugin in ${viteConfig}...`));
+
+        fs.writeFileSync(
+            viteConfig,
+            `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from "path";
@@ -69,13 +69,13 @@ export default defineConfig({
   },
 });
 `
-    );
+        );
 
-    const jsonConfig = fs.existsSync("tsconfig.json") ? "tsconfig.json" : "jsconfig.json";
-    console.log(chalk.yellow(`\n⚙️ Configuring ${variant} with Tailwind plugin in ${jsonConfig}...`));
+        const jsonConfig = fs.existsSync("tsconfig.json") ? "tsconfig.json" : "jsconfig.json";
+        console.log(chalk.yellow(`\n⚙️ Configuring ${variant} with Tailwind plugin in ${jsonConfig}...`));
 
-    const jsonConfigContent = fs.existsSync("tsconfig.json")
-      ? `{
+        const jsonConfigContent = fs.existsSync("tsconfig.json")
+            ? `{
           "files": [],
           "references": [
             { "path": "./tsconfig.app.json" },
@@ -86,7 +86,7 @@ export default defineConfig({
             "paths": { "@/*": ["./src/*"] }
           }
         }`
-      : `{
+            : `{
           "include": ["src/**/*"],
           "compilerOptions": {
             "baseUrl": ".",
@@ -94,55 +94,55 @@ export default defineConfig({
           }
         }`;
 
-    fs.writeFileSync(jsonConfig, jsonConfigContent);
+        fs.writeFileSync(jsonConfig, jsonConfigContent);
 
-    const appConfigFile = "tsconfig.app.json";
-    if (fs.existsSync(appConfigFile)) {
-      console.log(chalk.yellow(`\n⚙️ Configuring path aliases in ${appConfigFile}...`));
+        const appConfigFile = "tsconfig.app.json";
+        if (fs.existsSync(appConfigFile)) {
+            console.log(chalk.yellow(`\n⚙️ Configuring path aliases in ${appConfigFile}...`));
 
-      try {
-        let appConfigContent = fs.readFileSync(appConfigFile, "utf-8");
+            try {
+                let appConfigContent = fs.readFileSync(appConfigFile, "utf-8");
 
-        appConfigContent = appConfigContent.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "").trim();
+                appConfigContent = appConfigContent.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "").trim();
 
-        let appConfig = JSON.parse(appConfigContent);
+                let appConfig = JSON.parse(appConfigContent);
 
-        if (!appConfig.compilerOptions) {
-          appConfig.compilerOptions = {};
+                if (!appConfig.compilerOptions) {
+                    appConfig.compilerOptions = {};
+                }
+
+                appConfig.compilerOptions.baseUrl = ".";
+                appConfig.compilerOptions.paths = { "@/*": ["./src/*"] };
+
+                fs.writeFileSync(appConfigFile, JSON.stringify(appConfig, null, 2));
+
+                console.log(chalk.green(`✅ Successfully updated ${appConfigFile} with path aliases!`));
+            } catch (error: any) {
+                console.error(chalk.red("❌ Error updating tsconfig:", error.message));
+            }
         }
 
-        appConfig.compilerOptions.baseUrl = ".";
-        appConfig.compilerOptions.paths = { "@/*": ["./src/*"] };
+        console.log(chalk.yellow("✍️ Adding Tailwind to global styles..."));
+        fs.writeFileSync("src/index.css", `@import 'tailwindcss';\n`);
 
-        fs.writeFileSync(appConfigFile, JSON.stringify(appConfig, null, 2));
+        console.log(chalk.yellow("🧹 Removing default styles..."));
+        try {
+            fs.unlinkSync("src/App.css");
+        } catch (err) {
+            console.log(chalk.gray("No App.css found, skipping..."));
+        }
 
-        console.log(chalk.green(`✅ Successfully updated ${appConfigFile} with path aliases!`));
-      } catch (error: any) {
-        console.error(chalk.red("❌ Error updating tsconfig:", error.message));
-      }
-    }
+        console.log(chalk.blue("🛠 Installing ShadCN UI..."));
+        execSync(`npx shadcn@latest init`, { stdio: "inherit" });
 
-    console.log(chalk.yellow("✍️ Adding Tailwind to global styles..."));
-    fs.writeFileSync("src/index.css", `@import 'tailwindcss';\n`);
+        console.log(chalk.blue("📦 Installing ShadCN components..."));
+        execSync(`npx shadcn@latest add button`, { stdio: "inherit" });
 
-    console.log(chalk.yellow("🧹 Removing default styles..."));
-    try {
-      fs.unlinkSync("src/App.css");
-    } catch (err) {
-      console.log(chalk.gray("No App.css found, skipping..."));
-    }
-
-    console.log(chalk.blue("🛠 Installing ShadCN UI..."));
-    execSync(`npx shadcn@latest init`, { stdio: "inherit" });
-
-    console.log(chalk.blue("📦 Installing ShadCN components..."));
-    execSync(`npx shadcn@latest add button`, { stdio: "inherit" });
-
-    console.log(chalk.yellow("📝 Updating App component..."));
-    const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
-    fs.writeFileSync(
-      appFile,
-      `import { useState } from "react";
+        console.log(chalk.yellow("📝 Updating App component..."));
+        const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
+        fs.writeFileSync(
+            appFile,
+            `import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function App() {
@@ -159,15 +159,15 @@ export default function App() {
   );
 }
 `
-    );
+        );
 
-    console.log(chalk.green(`✅ Successfully set up ${projectName} with Vite, React & Tailwind!`));
-    console.log(chalk.yellow("\n👉 Done. Now run:\n"));
-    console.log(chalk.cyan(`  cd ${projectName}`));
-    console.log(chalk.cyan(`  npm run dev\n`));
-  } catch (error: any) {
-    console.error(chalk.red("❌ Error setting up the project:", error.message));
-  }
+        console.log(chalk.green(`✅ Successfully set up ${projectName} with Vite, React & Tailwind!`));
+        console.log(chalk.yellow("\n👉 Done. Now run:\n"));
+        console.log(chalk.cyan(`  cd ${projectName}`));
+        console.log(chalk.cyan(`  npm run dev\n`));
+    } catch (error: any) {
+        console.error(chalk.red("❌ Error setting up the project:", error.message));
+    }
 });
 
 program.parse(process.argv);

@@ -1,47 +1,28 @@
-name: Publish to NPM
+name: Publish TypeScript Package
 
 on:
   push:
     branches:
-      - main  # Change this if you want to trigger on a different branch
+      - main
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: 'https://registry.npmjs.org/'
+          registry-url: "https://registry.npmjs.org/"
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Run Linter (Optional)
-        run: npm run lint
-        continue-on-error: true  # Does not stop if linting fails
-
-      - name: Run Tests (Optional)
-        run: npm test
-        continue-on-error: true  # Does not stop if tests fail
-
-      - name: Check if version has changed
-        id: check_version
-        run: |
-          VERSION=$(jq -r .version package.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          if npm show your-package-name version | grep -q "$VERSION"; then
-            echo "Version $VERSION is already published. Skipping publish."
-            exit 1
-          fi
-
-      - name: Build the package (Optional)
-        run: npm run build # Change this if you don’t have a build step
+      - name: Build Project
+        run: npm run build
 
       - name: Publish to NPM
         run: npm publish --access public
