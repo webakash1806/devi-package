@@ -1,12 +1,12 @@
 {
   "name": "create-devi",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "",
   "main": "index.ts",
   "types": "index.d.ts",
   "module": "index.mjs",
   "bin": {
-    "create-devi": "./index.js"
+    "create-devi": "./index.ts"
   },
   "scripts": {
     "build": "tsc",
