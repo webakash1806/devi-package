@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 
 const program = new Command();
 
-program.version("1.1.8").action(async () => {
+program.version("1.1.9").action(async () => {
   console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
   const { projectName }: { projectName: string } = await inquirer.prompt([
@@ -49,10 +49,9 @@ program.version("1.1.8").action(async () => {
 
     if (fs.existsSync(packageJSON)) {
       const packageJSONContent = JSON.parse(fs.readFileSync(packageJSON, "utf-8"));
-      const deviPackage = require("devi/package.json");
-      const installedVersion = deviPackage.version;
+      const deviVersion = require("create-devi/package.json").version
       packageJSONContent.devDependencies = packageJSONContent.devDependencies || {};
-      packageJSONContent.devDependencies["devi"] = installedVersion
+      packageJSONContent.devDependencies["devi"] = deviVersion
 
       fs.writeFileSync(packageJSON, JSON.stringify(packageJSONContent, null, 2));
     }
