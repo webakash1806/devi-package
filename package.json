@@ -2,6 +2,7 @@
   "name": "create-devi",
   "version": "1.1.6",
   "description": "",
+  "type": "module",
   "main": "index.ts",
   "types": "index.d.ts",
   "module": "index.mjs",
