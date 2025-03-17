@@ -5,13 +5,10 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { Command } from "commander";
 import * as fs from "fs";
-import path from "path";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
 
 const program = new Command();
 
-program.version("2.0.0").action(async () => {
+program.version("2.1.0").action(async () => {
   console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
   const { projectName }: { projectName: string } = await inquirer.prompt([
@@ -44,17 +41,6 @@ program.version("2.0.0").action(async () => {
 
     console.log(chalk.blue("📦 Installing dependencies..."));
     execSync(`npm install`, { stdio: "inherit" });
-
-    const packageJSON = path.join(process.cwd(), "package.json");
-
-    if (fs.existsSync(packageJSON)) {
-      const packageJSONContent = JSON.parse(fs.readFileSync(packageJSON, "utf-8"));
-      const deviVersion = require("create-devi/package.json").version
-      packageJSONContent.devDependencies = packageJSONContent.devDependencies || {};
-      packageJSONContent.devDependencies["devi"] = deviVersion
-
-      fs.writeFileSync(packageJSON, JSON.stringify(packageJSONContent, null, 2));
-    }
 
     const { styleMode }: { styleMode: "tailwind" | "tailwind + shadcn" | "none" } = await inquirer.prompt([
       {
