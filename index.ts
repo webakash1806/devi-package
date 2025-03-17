@@ -8,7 +8,7 @@ import * as fs from "fs";
 
 const program = new Command();
 
-program.version("1.1.5").action(async () => {
+program.version("1.1.6").action(async () => {
   console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
   const { projectName }: { projectName: string } = await inquirer.prompt([
