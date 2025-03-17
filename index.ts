@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 
 const program = new Command();
 
-program.version("1.1.7").action(async () => {
+program.version("1.1.8").action(async () => {
   console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
   const { projectName }: { projectName: string } = await inquirer.prompt([
