@@ -5,6 +5,9 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { Command } from "commander";
 import * as fs from "fs";
+import path from "path";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 const program = new Command();
 
@@ -41,6 +44,18 @@ program.version("1.1.7").action(async () => {
 
     console.log(chalk.blue("📦 Installing dependencies..."));
     execSync(`npm install`, { stdio: "inherit" });
+
+    const packageJSON = path.join(process.cwd(), "package.json");
+
+    if (fs.existsSync(packageJSON)) {
+      const packageJSONContent = JSON.parse(fs.readFileSync(packageJSON, "utf-8"));
+      const deviPackage = require("devi/package.json");
+      const installedVersion = deviPackage.version;
+      packageJSONContent.devDependencies = packageJSONContent.devDependencies || {};
+      packageJSONContent.devDependencies["devi"] = installedVersion
+
+      fs.writeFileSync(packageJSON, JSON.stringify(packageJSONContent, null, 2));
+    }
 
     const { styleMode }: { styleMode: "tailwind" | "tailwind + shadcn" | "none" } = await inquirer.prompt([
       {
