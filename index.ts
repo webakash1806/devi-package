@@ -462,7 +462,7 @@ export default App;
 
       // Create Layout and Pages structure
       const layoutDir = path.join("src", "Layout");
-      const pagesDir = path.path.join("src", "pages");
+      const pagesDir = path.join("src", "pages");
       fs.mkdirSync(layoutDir, { recursive: true });
       fs.mkdirSync(pagesDir, { recursive: true });
 
