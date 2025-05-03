@@ -5,6 +5,7 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { Command } from "commander";
 import * as fs from "fs";
+import * as path from "path";
 
 const program = new Command();
 
@@ -103,37 +104,139 @@ export default defineConfig({
         console.log(chalk.gray("No App.css found, skipping..."));
       }
 
-      console.log(chalk.yellow("📝 Updating App component..."));
+      // Create Layout and Pages structure
+      const layoutDir = path.join("src", "Layout");
+      const pagesDir = path.join("src", "pages");
+      fs.mkdirSync(layoutDir, { recursive: true });
+      fs.mkdirSync(pagesDir, { recursive: true });
+
+      //HomeLayout File
+      const homeLayoutFile = path.join(layoutDir, variant === "react-ts" ? "HomeLayout.tsx" : "HomeLayout.jsx");
+      fs.writeFileSync(
+        homeLayoutFile,
+        variant === "react-ts"
+          ? `import React from 'react';
+
+interface HomeLayoutProps {
+  children: React.ReactNode;
+}
+
+const HomeLayout: React.FC<HomeLayoutProps> = ({ children }) => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      {children}
+    </div>
+  );
+};
+
+export default HomeLayout;
+`
+          : `import React from 'react';
+
+const HomeLayout = ({ children }) => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      {children}
+    </div>
+  );
+};
+
+export default HomeLayout;
+`
+      );
+
+      //Home Page File
+      const homePageFile = path.join(pagesDir, variant === "react-ts" ? "Home.tsx" : "Home.jsx");
+      fs.writeFileSync(
+        homePageFile,
+        variant === "react-ts"
+          ? `import React, { useState } from 'react';
+import { Button } from "@/components/ui/button"
+
+const Home = () => {
+  const [showText, setShowText] = useState(false);
+
+  return (
+    <div className="text-center space-y-4">
+      <h1 className="text-4xl text-purple-500">Welcome to Your New Project</h1>
+      <Button onClick={() => setShowText(true)} className="bg-blue-500 text-white px-4 py-2">
+        Click Me
+      </Button>
+      {showText && <h2 className="text-2xl text-green-400">Welcome to Devi Support</h2>}
+    </div>
+  );
+};
+
+export default Home;
+`
+          : `import React, { useState } from 'react';
+
+const Home = () => {
+  const [showText, setShowText] = useState(false);
+
+  return (
+    <div className="text-center space-y-4">
+      <h1 className="text-4xl text-purple-500">Welcome to Your New Project</h1>
+      <button onClick={() => setShowText(true)} className="bg-blue-500 text-white px-4 py-2">
+        Click Me
+      </button>
+      {showText && <h2 className="text-2xl text-green-400">Welcome to Devi Support</h2>}
+    </div>
+  );
+};
+
+export default Home;
+`
+      );
+
+      // Update App Component
       const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
-      let appContent = `import { useState } from "react";
- 
- export default function App() {
-   const [showText, setShowText] = useState(false);
- 
-   return (
-     <div className="flex flex-col items-center justify-center h-screen bg-black text-center space-y-4">
-       <h1 className="text-4xl text-purple-500">Welcome to Your New Project</h1>
-       <button onClick={() => setShowText(true)} className="bg-blue-500 text-white px-4 py-2">
-         Click Me
-       </button>
-       {showText && <h2 className="text-2xl text-green-400">Welcome to Devi Support</h2>}
-     </div>
-   );
- }
- `;
+      let appContent =
+        variant === "react-ts"
+          ? `import React from 'react';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const App = () => {
+  return (
+    <HomeLayout>
+      <Home />
+    </HomeLayout>
+  );
+};
+
+export default App;
+`
+          : `import React from 'react';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const App = () => {
+  return (
+    <HomeLayout>
+      <Home />
+    </HomeLayout>
+  );
+};
+
+export default App;
+`;
       if (installReactRouterDom) {
         console.log(chalk.blue("🔩 Installing React Router DOM..."));
         execSync(`npm install react-router-dom`, { stdio: "inherit" });
-        appContent = `import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+        appContent =
+          variant === "react-ts"
+            ? `import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
 
-const Home = () => <h2 className="text-2xl text-green-400">Home Page</h2>;
 const About = () => <h2 className="text-2xl text-blue-400">About Page</h2>;
 
-export default function App() {
+const App = () => {
   return (
     <Router>
-      <div className="flex flex-col items-center justify-center h-screen bg-black text-center space-y-4">
+      <HomeLayout>
         <nav className="space-x-4">
           <Link to="/" className="text-blue-500 hover:underline">Home</Link>
           <Link to="/about" className="text-purple-500 hover:underline">About</Link>
@@ -142,10 +245,38 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
         </Routes>
-      </div>
+      </HomeLayout>
     </Router>
   );
-}
+};
+
+export default App;
+`
+            : `import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const About = () => <h2 className="text-2xl text-blue-400">About Page</h2>;
+
+const App = () => {
+  return (
+    <Router>
+      <HomeLayout>
+        <nav className="space-x-4">
+          <Link to="/" className="text-blue-500 hover:underline">Home</Link>
+          <Link to="/about" className="text-purple-500 hover:underline">About</Link>
+        </nav>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </HomeLayout>
+    </Router>
+  );
+};
+
+export default App;
 `;
       }
       fs.writeFileSync(appFile, appContent);
@@ -248,16 +379,60 @@ export default function App() {
       console.log(chalk.blue("📦 Installing ShadCN components..."));
       execSync(`npx shadcn@latest add button`, { stdio: "inherit" });
 
-      console.log(chalk.yellow("📝 Updating App component..."));
-      const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
-      let appContent = `import { useState } from "react";
-import { Button } from "@/components/ui/button";
- 
-export default function App() {
-  const [showText, setShowText] = useState(false);
- 
+      // Create Layout and Pages structure
+      const layoutDir = path.join("src", "Layout");
+      const pagesDir = path.join("src", "pages");
+      fs.mkdirSync(layoutDir, { recursive: true });
+      fs.mkdirSync(pagesDir, { recursive: true });
+
+      //HomeLayout File
+      const homeLayoutFile = path.join(layoutDir, variant === "react-ts" ? "HomeLayout.tsx" : "HomeLayout.jsx");
+      fs.writeFileSync(
+        homeLayoutFile,
+        variant === "react-ts"
+          ? `import React from 'react';
+
+interface HomeLayoutProps {
+  children: React.ReactNode;
+}
+
+const HomeLayout: React.FC<HomeLayoutProps> = ({ children }) => {
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-black text-center space-y-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      {children}
+    </div>
+  );
+};
+
+export default HomeLayout;
+`
+          : `import React from 'react';
+
+const HomeLayout = ({ children }) => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      {children}
+    </div>
+  );
+};
+
+export default HomeLayout;
+`
+      );
+
+      //Home Page File
+      const homePageFile = path.join(pagesDir, variant === "react-ts" ? "Home.tsx" : "Home.jsx");
+      fs.writeFileSync(
+        homePageFile,
+        variant === "react-ts"
+          ? `import React, { useState } from 'react';
+import { Button } from "@/components/ui/button"
+
+const Home = () => {
+  const [showText, setShowText] = useState(false);
+
+  return (
+    <div className="text-center space-y-4">
       <h1 className="text-4xl text-purple-500">Welcome to Your New Project</h1>
       <Button onClick={() => setShowText(true)} className="bg-blue-500 text-white px-4 py-2">
         Click Me
@@ -265,22 +440,79 @@ export default function App() {
       {showText && <h2 className="text-2xl text-green-400">Welcome to Devi Support</h2>}
     </div>
   );
-}
+};
+
+export default Home;
+`
+          : `import React, { useState } from 'react';
+import { Button } from "@/components/ui/button"
+
+const Home = () => {
+  const [showText, setShowText] = useState(false);
+
+  return (
+    <div className="text-center space-y-4">
+      <h1 className="text-4xl text-purple-500">Welcome to Your New Project</h1>
+      <Button onClick={() => setShowText(true)} className="bg-blue-500 text-white px-4 py-2">
+        Click Me
+      </Button>
+      {showText && <h2 className="text-2xl text-green-400">Welcome to Devi Support</h2>}
+    </div>
+  );
+};
+
+export default Home;
+`
+      );
+
+      // Update App Component
+      const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
+      let appContent =
+        variant === "react-ts"
+          ? `import React from 'react';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const App = () => {
+  return (
+    <HomeLayout>
+      <Home />
+    </HomeLayout>
+  );
+};
+
+export default App;
+`
+          : `import React from 'react';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const App = () => {
+  return (
+    <HomeLayout>
+      <Home />
+    </HomeLayout>
+  );
+};
+
+export default App;
 `;
       if (installReactRouterDom) {
         console.log(chalk.blue("🔩 Installing React Router DOM..."));
         execSync(`npm install react-router-dom`, { stdio: "inherit" });
-        appContent = `import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+        appContent =
+          variant === "react-ts"
+            ? `import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
 
-const Home = () => <h2 className="text-2xl text-green-400">Home Page</h2>;
 const About = () => <h2 className="text-2xl text-blue-400">About Page</h2>;
 
-export default function App() {
+const App = () => {
   return (
     <Router>
-      <div className="flex flex-col items-center justify-center h-screen bg-black text-center space-y-4">
+      <HomeLayout>
         <nav className="space-x-4">
           <Link to="/" className="text-blue-500 hover:underline">Home</Link>
           <Link to="/about" className="text-purple-500 hover:underline">About</Link>
@@ -289,34 +521,176 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
         </Routes>
-        <Button onClick={() => console.log('Clicked')} className="bg-blue-500 text-white px-4 py-2">
-          Click Me
-        </Button>
-      </div>
+      </HomeLayout>
     </Router>
   );
-}
+};
+
+export default App;
+`
+            : `import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const About = () => <h2 className="text-2xl text-blue-400">About Page</h2>;
+
+const App = () => {
+  return (
+    <Router>
+      <HomeLayout>
+        <nav className="space-x-4">
+          <Link to="/" className="text-blue-500 hover:underline">Home</Link>
+          <Link to="/about" className="text-purple-500 hover:underline">About</Link>
+        </nav>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </HomeLayout>
+    </Router>
+  );
+};
+
+export default App;
 `;
       }
       fs.writeFileSync(appFile, appContent);
 
       console.log(chalk.green(`✅ Successfully set up ${projectName} with Vite, React & Tailwind!`));
     } else {
+      // Create Layout and Pages structure
+      const layoutDir = path.join("src", "Layout");
+      const pagesDir = path.join("src", "pages");
+      fs.mkdirSync(layoutDir, { recursive: true });
+      fs.mkdirSync(pagesDir, { recursive: true });
+
+      //HomeLayout File
+      const homeLayoutFile = path.join(layoutDir, variant === "react-ts" ? "HomeLayout.tsx" : "HomeLayout.jsx");
+      fs.writeFileSync(
+        homeLayoutFile,
+        variant === "react-ts"
+          ? `import React from 'react';
+
+interface HomeLayoutProps {
+  children: React.ReactNode;
+}
+
+const HomeLayout: React.FC<HomeLayoutProps> = ({ children }) => {
+  return (
+    <div>
+      {children}
+    </div>
+  );
+};
+
+export default HomeLayout;
+`
+          : `import React from 'react';
+
+const HomeLayout = ({ children }) => {
+  return (
+    <div>
+      {children}
+    </div>
+  );
+};
+
+export default HomeLayout;
+`
+      );
+
+      //Home Page File
+      const homePageFile = path.join(pagesDir, variant === "react-ts" ? "Home.tsx" : "Home.jsx");
+      fs.writeFileSync(
+        homePageFile,
+        variant === "react-ts"
+          ? `import React, { useState } from 'react';
+
+const Home = () => {
+  const [showText, setShowText] = useState(false);
+
+  return (
+    <div className="text-center space-y-4">
+      <h1 className="text-4xl">Welcome to Your New Project</h1>
+      <button onClick={() => setShowText(true)}>
+        Click Me
+      </button>
+      {showText && <h2 className="text-2xl">Welcome to Devi Support</h2>}
+    </div>
+  );
+};
+
+export default Home;
+`
+          : `import React, { useState } from 'react';
+
+const Home = () => {
+  const [showText, setShowText] = useState(false);
+
+  return (
+    <div className="text-center space-y-4">
+      <h1 className="text-4xl">Welcome to Your New Project</h1>
+      <button onClick={() => setShowText(true)}>
+        Click Me
+      </button>
+      {showText && <h2 className="text-2xl">Welcome to Devi Support</h2>}
+    </div>
+  );
+};
+
+export default Home;
+`
+      );
+
+      // Update App Component
+      const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
+      let appContent =
+        variant === "react-ts"
+          ? `import React from 'react';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const App = () => {
+  return (
+    <HomeLayout>
+      <Home />
+    </HomeLayout>
+  );
+};
+
+export default App;
+`
+          : `import React from 'react';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const App = () => {
+  return (
+    <HomeLayout>
+      <Home />
+    </HomeLayout>
+  );
+};
+
+export default App;
+`;
       if (installReactRouterDom) {
         console.log(chalk.blue("🔩 Installing React Router DOM..."));
         execSync(`npm install react-router-dom`, { stdio: "inherit" });
+        appContent =
+          variant === "react-ts"
+            ? `import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
 
-        console.log(chalk.yellow("📝 Updating App component..."));
-        const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
-        const appContent = `import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-
-const Home = () => <h2 className="text-2xl">Home Page</h2>;
 const About = () => <h2 className="text-2xl">About Page</h2>;
 
-export default function App() {
+const App = () => {
   return (
     <Router>
-      <div>
+      <HomeLayout>
         <nav>
           <ul>
             <li>
@@ -331,16 +705,48 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
         </Routes>
-      </div>
+      </HomeLayout>
     </Router>
   );
-}
+};
+
+export default App;
+`
+            : `import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomeLayout from './Layout/HomeLayout';
+import Home from './pages/Home';
+
+const About = () => <h2 className="text-2xl">About Page</h2>;
+
+const App = () => {
+  return (
+    <Router>
+      <HomeLayout>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/about">About</Link>
+            </li>
+          </ul>
+        </nav>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </HomeLayout>
+    </Router>
+  );
+};
+
+export default App;
 `;
-        fs.writeFileSync(appFile, appContent);
-        console.log(chalk.green(`✅ Successfully set up ${projectName} with React and React Router DOM!`));
-      } else {
-        console.log(chalk.green(`✅ Successfully set up ${projectName} with React with ${variant}!`));
       }
+      fs.writeFileSync(appFile, appContent);
+      console.log(chalk.green(`✅ Successfully set up ${projectName} with React with ${variant}!`));
     }
 
     console.log(chalk.yellow("\n👉 Done. Now run:\n"));
