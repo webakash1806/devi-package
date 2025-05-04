@@ -11,7 +11,7 @@ import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayout
 
 const program = new Command();
 
-program.version("2.1.0").action(async () => {
+program.version("2.8.0").action(async () => {
   console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
   const { projectName }: { projectName: string } = await inquirer.prompt([
