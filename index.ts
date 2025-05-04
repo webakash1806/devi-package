@@ -6,8 +6,8 @@ import chalk from "chalk";
 import { Command } from "commander";
 import * as fs from "fs";
 import * as path from "path";
-import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS"
-import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig } from "./utils/templatesJS"
+import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS.js"
+import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig } from "./utils/templatesJS.js"
 
 const program = new Command();
 
