@@ -5,10 +5,10 @@ import chalk from "chalk";
 import { Command } from "commander";
 import * as fs from "fs";
 import * as path from "path";
-import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS";
-import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig } from "./utils/templatesJS";
+import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS.js";
+import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig } from "./utils/templatesJS.js";
 const program = new Command();
-program.version("2.1.0").action(async () => {
+program.version("2.8.0").action(async () => {
     console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
     const { projectName } = await inquirer.prompt([
         {
@@ -418,42 +418,8 @@ export default HomeLayout;
             //Home Page File
             const homePageFile = path.join(pagesDir, variant === "react-ts" ? "Home.tsx" : "Home.jsx");
             fs.writeFileSync(homePageFile, variant === "react-ts"
-                ? `import React, { useState } from 'react';
-
-const Home = () => {
-  const [showText, setShowText] = useState(false);
-
-  return (
-    <div className="text-center space-y-4">
-      <h1 className="text-4xl">Welcome to Your New Project</h1>
-      <button onClick={() => setShowText(true)}>
-        Click Me
-      </button>
-      {showText && <h2 className="text-2xl">Welcome to Devi Support</h2>}
-    </div>
-  );
-};
-
-export default Home;
-`
-                : `import React, { useState } from 'react';
-
-const Home = () => {
-  const [showText, setShowText] = useState(false);
-
-  return (
-    <div className="text-center space-y-4">
-      <h1 className="text-4xl">Welcome to Your New Project</h1>
-      <button onClick={() => setShowText(true)}>
-        Click Me
-      </button>
-      {showText && <h2 className="text-2xl">Welcome to Devi Support</h2>}
-    </div>
-  );
-};
-
-export default Home;
-`);
+                ? homePageTS
+                : homePageJS);
             // Update App Component
             const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
             let appContent = variant === "react-ts"

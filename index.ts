@@ -485,42 +485,8 @@ export default HomeLayout;
       fs.writeFileSync(
         homePageFile,
         variant === "react-ts"
-          ? `import React, { useState } from 'react';
-
-const Home = () => {
-  const [showText, setShowText] = useState(false);
-
-  return (
-    <div className="text-center space-y-4">
-      <h1 className="text-4xl">Welcome to Your New Project</h1>
-      <button onClick={() => setShowText(true)}>
-        Click Me
-      </button>
-      {showText && <h2 className="text-2xl">Welcome to Devi Support</h2>}
-    </div>
-  );
-};
-
-export default Home;
-`
-          : `import React, { useState } from 'react';
-
-const Home = () => {
-  const [showText, setShowText] = useState(false);
-
-  return (
-    <div className="text-center space-y-4">
-      <h1 className="text-4xl">Welcome to Your New Project</h1>
-      <button onClick={() => setShowText(true)}>
-        Click Me
-      </button>
-      {showText && <h2 className="text-2xl">Welcome to Devi Support</h2>}
-    </div>
-  );
-};
-
-export default Home;
-`
+          ? homePageTS
+          : homePageJS
       );
 
       // Update App Component
