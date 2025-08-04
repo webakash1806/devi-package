@@ -1,20 +1,22 @@
 # Create-DEVI
 
-**Version: 1.1.0**
+**Version: 1.1.0**  
+A powerful CLI to scaffold modern React applications with Vite, Tailwind CSS, and ShadCN UI.
 
-A CLI tool to quickly scaffold React projects with a powerful setup including Vite, Tailwind CSS, and ShadCN UI.
+---
 
-## Description
+## 🚀 What is Create-DEVI?
 
-Create-DEVI is a command-line interface tool that helps you set up a new React project with a modern tech stack. It provides a streamlined way to create a new React application with either JavaScript or TypeScript, pre-configured with Tailwind CSS, ShadCN UI, and proper path aliases.
+**Create-DEVI** is a lightweight and developer-friendly CLI tool that helps you **quickly spin up a modern React project** using the latest stack:
 
-Key features:
-- Choice between JavaScript and TypeScript
-- Automatic Vite configuration with Tailwind CSS
-- Path alias setup (@/ points to src/)
-- ShadCN UI integration with base components
-- Clean starting template
+- ⚡ Vite for ultra-fast bundling
+- 🎨 Tailwind CSS for styling
+- 🧩 ShadCN UI components pre-configured
+- 🔄 JavaScript or TypeScript support
+- ✅ Path aliases with `@/` pointing to `src/`
+- 🧼 Clean and minimal starting template
 
+---
 ## Installation
 
 You can use any of the following package managers to create a new project:
