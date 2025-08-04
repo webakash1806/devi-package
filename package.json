@@ -1,7 +1,7 @@
 {
   "name": "create-devi",
-  "version": "3.6.0",
-  "description": "",
+  "version": "3.6.1",
+  "description": "A CLI tool for scaffolding React projects with modern tooling",
   "type": "module",
   "main": "index.ts",
   "types": "index.d.ts",
@@ -16,7 +16,14 @@
     "clean": "rm -rf dist",
     "prepare": "npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "react",
+    "cli",
+    "typescript",
+    "tailwind",
+    "shadcn",
+    "scaffold"
+  ],
   "author": "Akash Kumar Singh",
   "license": "MIT",
   "devDependencies": {

@@ -1,6 +1,6 @@
 # Create-DEVI
 
-**Version: 1.1.0**
+**Version: 3.6.1**
 
 A CLI tool to quickly scaffold React projects with a powerful setup including Vite, Tailwind CSS, and ShadCN UI.
 

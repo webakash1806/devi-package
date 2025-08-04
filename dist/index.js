@@ -1,62 +1,27 @@
 #!/usr/bin/env node
-import { execSync } from "child_process";
-import inquirer from "inquirer";
 import chalk from "chalk";
+import { execSync } from "child_process";
 import { Command } from "commander";
 import * as fs from "fs";
 import * as path from "path";
-import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS.js";
+import { getProjectName, getProjectVariant, getRouterOption, getStyleMode } from "./src/cli/prompt.js";
 import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig } from "./utils/templatesJS.js";
+import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS.js";
 const program = new Command();
 program.version("2.8.0").action(async () => {
     console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
-    const { projectName } = await inquirer.prompt([
-        {
-            type: "input",
-            name: "projectName",
-            message: "Enter your project name:",
-            validate: (input) => (input ? true : "Project name cannot be empty!"),
-        },
-    ]);
+    const projectName = await getProjectName();
     try {
         console.log(chalk.blue(`\n📂 Creating project: ${projectName}...`));
-        const { variant } = await inquirer.prompt([
-            {
-                type: "list",
-                name: "variant",
-                message: "Choose a variant:",
-                choices: [
-                    { name: "JavaScript", value: "react" },
-                    { name: "TypeScript", value: "react-ts" },
-                ],
-            },
-        ]);
+        const variant = await getProjectVariant();
         execSync(`npm create vite@latest ${projectName} -- --template ${variant}`, { stdio: "inherit" });
         process.chdir(projectName);
         console.log(chalk.blue("📦 Installing dependencies..."));
         execSync(`npm install`, { stdio: "inherit" });
-        const { styleMode } = await inquirer.prompt([
-            {
-                type: "list",
-                name: "styleMode",
-                message: "Choose a Style mode:",
-                choices: [
-                    { name: "tailwind CSS", value: "tailwind" },
-                    { name: "tailwind CSS + ShadCN UI", value: "tailwind + shadcn" },
-                    { name: "None", value: "none" },
-                ],
-            },
-        ]);
+        const styleMode = await getStyleMode();
         let installReactRouterDom = false;
         if (styleMode !== "none") {
-            const { router } = await inquirer.prompt([
-                {
-                    type: "confirm",
-                    name: "router",
-                    message: "Do you want to set up React Router DOM?",
-                    default: false,
-                },
-            ]);
+            const router = await getRouterOption();
             installReactRouterDom = router;
         }
         if (styleMode === "tailwind") {
@@ -130,7 +95,7 @@ export default defineConfig({
   import react from '@vitejs/plugin-react';
   import tailwindcss from '@tailwindcss/vite';
   import path from "path";
-  
+
   export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -266,76 +231,8 @@ export default HomeLayout;
             //Home Page File
             const homePageFile = path.join(pagesDir, variant === "react-ts" ? "Home.tsx" : "Home.jsx");
             fs.writeFileSync(homePageFile, variant === "react-ts"
-                ? `import React, { useState } from 'react';
-import { Button } from "@/components/ui/button"
-
-const Home = () => {
-  const [showText, setShowText] = useState(false);
-
-  return (
-    <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center text-center space-y-6">
-      <p className="text-sm text-gray-400">Trusted by 1.5M Coders</p>
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
-      Devi - Fast &amp; Scalable Development
-      </h1>
-      <h2 className="text-2xl md:text-3xl font-normal text-orange-500">
-       Make your development experience smooth and scalable
-      </h2>
-      <p className="text-gray-300 max-w-2xl">
-      Devi is an open-source package that helps you set up your project quickly and efficiently.
-        It is also a community-driven project, so feel free to contribute if you have any ideas or features you'd like to add.
-      </p>
-      <div className="flex flex-wrap justify-center gap-4 text-gray-300">
-         <span>💻 Fast setup</span>
-        <span>📦 Ready-to-use</span>
-        <span>🔍 Scalable</span>
-        <span>🤝 Community</span>
-        <span>📝 Documentation</span>
-      </div>
-      <Button className="bg-orange-500 text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-all duration-300 text-lg">
-        Check all Live Cohorts
-      </Button>
-    </div>
-  );
-};
-
-export default Home;
-`
-                : `import React, { useState } from 'react';
-import { Button } from "@/components/ui/button"
-
-const Home = () => {
-  const [showText, setShowText] = useState(false);
-
-  return (
-    <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center text-center space-y-6">
-      <p className="text-sm text-gray-400">Trusted by 1.5M Coders</p>
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
-         Devi - Fast &amp; Scalable Development
-      </h1>
-      <h2 className="text-2xl md:text-3xl font-normal text-orange-500">
-        Make your development experience smooth and scalable
-      </h2>
-      <p className="text-gray-300 max-w-2xl">
-         Devi is an open-source package that helps you set up your project quickly and efficiently.
-        It is also a community-driven project, so feel free to contribute if you have any ideas or features you'd like to add.
-      </p>
-      <div className="flex flex-wrap justify-center gap-4 text-gray-300">
-        <span>💻 Fast setup</span>
-        <span>📦 Ready-to-use</span>
-        <span>🔍 Scalable</span>
-        <span>🤝 Community</span>
-        <span>📝 Documentation</span>
-      </div>
-      <button className="bg-orange-500 text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-all duration-300 text-lg">
-        Check all Live Cohorts
-      </button>
-    </div>
-  );
-};
-
-export default Home;
-`);
+                ? homePageTS
+                : homePageJS);
             // Update App Component
             const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";
             let appContent = variant === "react-ts"

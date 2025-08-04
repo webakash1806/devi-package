@@ -1,42 +1,24 @@
 #!/usr/bin/env node
 
-import { execSync } from "child_process";
-import inquirer from "inquirer";
 import chalk from "chalk";
+import { execSync } from "child_process";
 import { Command } from "commander";
 import * as fs from "fs";
 import * as path from "path";
-import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS.js"
-import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig } from "./utils/templatesJS.js"
-
+import { getProjectName, getProjectVariant, getRouterOption, getStyleMode } from "./src/cli/prompt.js";
+import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig } from "./utils/templatesJS.js";
+import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig } from "./utils/templatesTS.js";
 const program = new Command();
 
 program.version("2.8.0").action(async () => {
   console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
-  const { projectName }: { projectName: string } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "projectName",
-      message: "Enter your project name:",
-      validate: (input: string) => (input ? true : "Project name cannot be empty!"),
-    },
-  ]);
+  const projectName = await getProjectName();
 
   try {
     console.log(chalk.blue(`\n📂 Creating project: ${projectName}...`));
 
-    const { variant }: { variant: "react" | "react-ts" } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "variant",
-        message: "Choose a variant:",
-        choices: [
-          { name: "JavaScript", value: "react" },
-          { name: "TypeScript", value: "react-ts" },
-        ],
-      },
-    ]);
+    const variant = await getProjectVariant();
 
     execSync(`npm create vite@latest ${projectName} -- --template ${variant}`, { stdio: "inherit" });
 
@@ -45,29 +27,11 @@ program.version("2.8.0").action(async () => {
     console.log(chalk.blue("📦 Installing dependencies..."));
     execSync(`npm install`, { stdio: "inherit" });
 
-    const { styleMode }: { styleMode: "tailwind" | "tailwind + shadcn" | "none" } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "styleMode",
-        message: "Choose a Style mode:",
-        choices: [
-          { name: "tailwind CSS", value: "tailwind" },
-          { name: "tailwind CSS + ShadCN UI", value: "tailwind + shadcn" },
-          { name: "None", value: "none" },
-        ],
-      },
-    ]);
+    const styleMode = await getStyleMode();
 
     let installReactRouterDom = false;
     if (styleMode !== "none") {
-      const { router }: { router: boolean } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "router",
-          message: "Do you want to set up React Router DOM?",
-          default: false,
-        },
-      ]);
+      const router = await getRouterOption();
       installReactRouterDom = router;
     }
 
@@ -165,7 +129,7 @@ export default defineConfig({
   import react from '@vitejs/plugin-react';
   import tailwindcss from '@tailwindcss/vite';
   import path from "path";
-  
+
   export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: {
