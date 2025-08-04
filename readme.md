@@ -24,13 +24,19 @@ You can use any of the following package managers to create a new project:
 ```bash
 # Using npm
 npm create devi@latest
+```
 
+```bash
 # Using yarn
 yarn create devi@latest
+```
 
+```bash
 # Using pnpm
 pnpm create devi@latest
+```
 
+```bash
 # Using npx
 npx create-devi@latest
 ```
@@ -90,10 +96,16 @@ your-project-name/
 This is a **TypeScript** project. Here are the available scripts:
 
 ```bash
+# Clone the project
+git clone https://github.com/webakash1806/devi-package.git
+```
+
+```bash
 # Build the project
 npm run build
+```
 
-# ## Dependencies
+## Dependencies
 
 ### CLI Dependencies
 - commander (v13.1.0) - Command-line interface
@@ -127,7 +139,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
----
+
 
 Created by Akash Kumar Singh
 
