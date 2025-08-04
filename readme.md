@@ -37,23 +37,28 @@ npx create-devi@latest
 
 ## Usage
 
-After running one of the installation commands above, follow the interactive prompts:
+Once you run the installation command, the CLI will guide you through an interactive setup.
 
-```bash
-create-devi
-```
+### 🧩 Prompts include:
 
-The CLI will guide you through:
-1. Entering a project name
-2. Choosing between JavaScript and TypeScript
-3. Automatically setting up the project with:
-   - Vite
-   - React
-   - Tailwind CSS
-   - ShadCN UI
-   - Path aliases
+- **Project Name**  
+  Enter name for your new project.
 
-After the setup completes, you can start your development server:
+- **Language Selection**
+  - JavaScript
+  - TypeScript
+
+- **Styling Option**
+  - Tailwind CSS
+  - Tailwind CSS + ShadCN UI
+  - None
+
+- **Router Option**  
+  Choose whether you want to include `react-router-dom` for routing.
+
+Based on your selections, `create-devi` automatically sets up your project with a clean and organized structure.
+
+Boom! You can start your Project:
 
 ```bash
 cd your-project-name
