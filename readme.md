@@ -1,20 +1,22 @@
 # Create-DEVI
 
-**Version: 3.6.1**
+**Version: 1.1.0**
+A powerful CLI to scaffold modern React applications with Vite, Tailwind CSS, and ShadCN UI.
 
-A CLI tool to quickly scaffold React projects with a powerful setup including Vite, Tailwind CSS, and ShadCN UI.
+---
 
-## Description
+## 🚀 What is Create-DEVI?
 
-Create-DEVI is a command-line interface tool that helps you set up a new React project with a modern tech stack. It provides a streamlined way to create a new React application with either JavaScript or TypeScript, pre-configured with Tailwind CSS, ShadCN UI, and proper path aliases.
+**Create-DEVI** is a lightweight and developer-friendly CLI tool that helps you **quickly spin up a modern React project** using the latest stack:
 
-Key features:
-- Choice between JavaScript and TypeScript
-- Automatic Vite configuration with Tailwind CSS
-- Path alias setup (@/ points to src/)
-- ShadCN UI integration with base components
-- Clean starting template
+- ⚡ Vite for ultra-fast bundling
+- 🎨 Tailwind CSS for styling
+- 🧩 ShadCN UI components pre-configured
+- 🔄 JavaScript or TypeScript support
+- ✅ Path aliases with `@/` pointing to `src/`
+- 🧼 Clean and minimal starting template
 
+---
 ## Installation
 
 You can use any of the following package managers to create a new project:
@@ -22,36 +24,47 @@ You can use any of the following package managers to create a new project:
 ```bash
 # Using npm
 npm create devi@latest
+```
 
+```bash
 # Using yarn
 yarn create devi@latest
+```
 
+```bash
 # Using pnpm
 pnpm create devi@latest
+```
 
+```bash
 # Using npx
 npx create-devi@latest
 ```
 
 ## Usage
 
-After running one of the installation commands above, follow the interactive prompts:
+Once you run the installation command, the CLI will guide you through an interactive setup.
 
-```bash
-create-devi
-```
+### 🧩 Prompts include:
 
-The CLI will guide you through:
-1. Entering a project name
-2. Choosing between JavaScript and TypeScript
-3. Automatically setting up the project with:
-   - Vite
-   - React
-   - Tailwind CSS
-   - ShadCN UI
-   - Path aliases
+- **Project Name**
+  Enter name for your new project.
 
-After the setup completes, you can start your development server:
+- **Language Selection**
+  - JavaScript
+  - TypeScript
+
+- **Styling Option**
+  - Tailwind CSS
+  - Tailwind CSS + ShadCN UI
+  - None
+
+- **Router Option**
+  Choose whether you want to include `react-router-dom` for routing.
+
+Based on your selections, `create-devi` automatically sets up your project with a clean and organized structure.
+
+Boom! You can start your Project:
 
 ```bash
 cd your-project-name
@@ -83,10 +96,16 @@ your-project-name/
 This is a **TypeScript** project. Here are the available scripts:
 
 ```bash
+# Clone the project
+git clone https://github.com/webakash1806/devi-package.git
+```
+
+```bash
 # Build the project
 npm run build
+```
 
-# ## Dependencies
+## Dependencies
 
 ### CLI Dependencies
 - commander (v13.1.0) - Command-line interface
@@ -120,7 +139,8 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
----
 
-Created by Akash Kumar Singh
+
+Created by
+### Akash Kumar Singh
 
