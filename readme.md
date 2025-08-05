@@ -10,7 +10,6 @@
 
 ---
 
-**Version:** `3.6.1`  
 A powerful CLI to scaffold modern React applications with **Vite**, **Tailwind CSS**, and **ShadCN UI** — instantly.
 
 ---
