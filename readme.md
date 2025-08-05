@@ -1,10 +1,19 @@
 # Create-DEVI
 
-**Version: 1.1.0**
-A powerful CLI to scaffold modern React applications with Vite, Tailwind CSS, and ShadCN UI.
+[![npm version](https://img.shields.io/npm/v/create-devi.svg)](https://www.npmjs.com/package/create-devi)
+[![npm downloads](https://img.shields.io/npm/dt/create-devi.svg)](https://www.npmjs.com/package/create-devi)
+[![License](https://img.shields.io/npm/l/create-devi.svg)](./LICENSE)
+[![Node.js Version](https://img.shields.io/node/v/create-devi.svg)](https://nodejs.org/)
+[![Made with Vite](https://img.shields.io/badge/Made%20with-Vite-646CFF.svg)](https://vitejs.dev/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-0F172A?logo=tailwind-css&logoColor=38BDF8)](https://tailwindcss.com/)
+[![ShadCN UI](https://img.shields.io/badge/UI-ShadCN_UI-blueviolet)](https://ui.shadcn.com/)
 
 ---
 
+**Version:** `3.6.1`  
+A powerful CLI to scaffold modern React applications with **Vite**, **Tailwind CSS**, and **ShadCN UI** — instantly.
+
+---
 ## 🚀 What is Create-DEVI?
 
 **Create-DEVI** is a lightweight and developer-friendly CLI tool that helps you **quickly spin up a modern React project** using the latest stack:
