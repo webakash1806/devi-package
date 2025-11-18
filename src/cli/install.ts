@@ -1,9 +1,8 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 
-export const installDependencies = (projectName: string): void => {
+export const installDependencies = (): void => {
   console.log(chalk.blue("📦 Installing dependencies..."));
-  process.chdir(projectName);
   execSync(`npm install`, { stdio: "inherit" });
 };
 
