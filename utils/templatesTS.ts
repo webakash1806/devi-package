@@ -39,59 +39,397 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children }) => {
 export default HomeLayout;
 `
 
-export const homePageTS = `import React, { useState, useEffect } from 'react';
+export const homePageTS = `import React from 'react';
 
-const Home = () => {
- 
+type ButtonVariant = 'default' | 'secondary' | 'ghost' | 'gradient';
+type ButtonSize = 'default' | 'sm' | 'lg';
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { variant = 'default', size = 'default', className = '', children, ...props },
+    ref
+  ) => {
+    const baseStyles =
+      'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+
+    const variants: Record<ButtonVariant, string> = {
+      default: 'bg-white text-black hover:bg-gray-100',
+      secondary: 'bg-gray-800 text-white hover:bg-gray-700',
+      ghost: 'hover:bg-gray-800/50 text-white',
+      gradient:
+        'bg-gradient-to-b from-white via-white/95 to-white/60 text-black hover:scale-105 active:scale-95',
+    };
+
+    const sizes: Record<ButtonSize, string> = {
+      default: 'h-10 px-4 py-2 text-sm',
+      sm: 'h-10 px-5 text-sm',
+      lg: 'h-12 px-8 text-base',
+    };
+
+    return (
+      <button
+        ref={ref}
+        className={[baseStyles, variants[variant], sizes[size], className].join(' ')}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button';
+
+interface IconProps {
+  className?: string;
+  size?: number;
+}
+
+const ArrowRight: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M5 12h14" />
+    <path d="m12 5 7 7-7 7" />
+  </svg>
+);
+
+const Menu: React.FC<IconProps> = ({ className = '', size = 24 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="4" x2="20" y1="12" y2="12" />
+    <line x1="4" x2="20" y1="6" y2="6" />
+    <line x1="4" x2="20" y1="18" y2="18" />
+  </svg>
+);
+
+const X: React.FC<IconProps> = ({ className = '', size = 24 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+);
+
+const Navigation = React.memo(() => {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
   return (
-    <div className="container mx-auto px-4 py-10 flex flex-col items-center justify-center text-center bg-black rounded-xl shadow-xl mt-12">
-      <span className="bg-gray-800 px-2 py-1 text-xs  mb-4 rounded-full text-gray-300 font-medium flex items-center gap-2 transition-all duration-300 shadow-md border border-gray-700">
-        🧑‍💻 <span className=" tracking-wide">Trusted by 1.5M+ Developers</span>
-      </span>
+    <header className="fixed top-0 w-full z-50 border-b border-gray-800/50 bg-black/80 backdrop-blur-md">
+      <nav className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="text-xl font-semibold text-white">Logo</div>
 
-    <h1 className="text-3xl mb-2 md:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 leading-snug tracking-tight">
-  Devi: The Future of <br />
-  Scalable Web Development
-</h1>
+          <div className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <a
+              href="#getting-started"
+              className="text-sm text-white/60 hover:text-white transition-colors"
+            >
+              Getting started
+            </a>
+            <a
+              href="#components"
+              className="text-sm text-white/60 hover:text-white transition-colors"
+            >
+              Components
+            </a>
+            <a
+              href="#documentation"
+              className="text-sm text-white/60 hover:text-white transition-colors"
+            >
+              Documentation
+            </a>
+          </div>
 
-      <h2 className="text-lg mb-3 font-semibold text-orange-400">
-        Build Modern Web Apps Faster and Smarter
-      </h2>
+          <div className="hidden md:flex items-center gap-4">
+            <Button type="button" variant="ghost" size="sm">
+              Sign in
+            </Button>
+            <Button type="button" variant="default" size="sm">
+              Sign Up
+            </Button>
+          </div>
 
-      <p className="text-gray-300 max-w-2xl text-sm text-base md:text-md leading-relaxed">
-        Devi is an open-source development platform designed for speed, scalability, and flexibility. Whether you're building MVPs, enterprise-grade systems, or hobby projects, Devi helps you launch faster with production-ready tools.
+          <button
+            type="button"
+            className="md:hidden text-white"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </nav>
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-black/95 backdrop-blur-md border-t border-gray-800/50">
+          <div className="px-6 py-4 flex flex-col gap-4">
+            <a
+              href="#getting-started"
+              className="text-sm text-white/60 hover:text-white transition-colors py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Getting started
+            </a>
+            <a
+              href="#components"
+              className="text-sm text-white/60 hover:text-white transition-colors py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Components
+            </a>
+            <a
+              href="#documentation"
+              className="text-sm text-white/60 hover:text-white transition-colors py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Documentation
+            </a>
+            <div className="flex flex-col gap-2 pt-4 border-t border-gray-800/50">
+              <Button type="button" variant="ghost" size="sm">
+                Sign in
+              </Button>
+              <Button type="button" variant="default" size="sm">
+                Sign Up
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+});
+
+Navigation.displayName = 'Navigation';
+
+const Hero = React.memo(() => {
+  return (
+    <section className="relative min-h-screen flex flex-col items-center justify-start px-6 py-20 md:py-24">
+      <aside className="mb-8 inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-full border border-gray-700 bg-gray-800/50 backdrop-blur-sm max-w-full">
+        <span className="text-xs text-center whitespace-nowrap text-gray-400">
+          New version of template is out!
+        </span>
+        <a
+          href="#new-version"
+          className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-all active:scale-95 whitespace-nowrap"
+          aria-label="Read more about the new version"
+        >
+          Read more
+          <ArrowRight size={12} />
+        </a>
+      </aside>
+      <h1
+        className="text-4xl md:text-5xl lg:text-6xl font-medium text-center max-w-3xl px-6 leading-tight mb-6"
+        style={{
+          background:
+            'linear-gradient(to bottom, #ffffff, #ffffff, rgba(255, 255, 255, 0.6))',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          letterSpacing: '-0.05em',
+        }}
+      >
+        Devi: Developer-first <br />
+        React starter kit
+      </h1>
+      <p className="text-sm md:text-base text-center max-w-2xl px-6 mb-10 text-gray-400">
+        Devi is a CLI that scaffolds modern React apps with Vite, Tailwind CSS, and ShadCN UI,
+        so you can focus on shipping features instead of wiring up boilerplate.
       </p>
-
-      <div className="flex flex-wrap justify-center gap-2 my-6">
-        <span className="bg-gray-800 text-xs px-2 py- rounded-full text-gray-300 font-medium flex items-center gap-2 transition-all duration-300 shadow-md border border-gray-700">
-          ⚡️ <span className="text-xs">Instant Setup</span>
-        </span>
-        <span className="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-300 font-medium flex items-center gap-2 transition-all duration-300 shadow-md border border-gray-700">
-          ✅ <span className="text-xs">Developer-Ready</span>
-        </span>
-        <span className="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-300 font-medium flex items-center gap-2 transition-all duration-300 shadow-md border border-gray-700">
-          🚀 <span className="text-xs">Built to Scale</span>
-        </span>
-        <span className="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-300 font-medium flex items-center gap-2 transition-all duration-300 shadow-md border border-gray-700">
-          📖 <span className="">Extensive Docs</span>
-        </span>
+      <div className="flex items-center gap-4 relative z-10 mb-16">
+        <Button
+          type="button"
+          variant="gradient"
+          size="lg"
+          className="rounded-lg flex items-center justify-center"
+          aria-label="Contribute on GitHub"
+        >
+          Contribute on GitHub
+        </Button>
       </div>
+      <div className="w-full max-w-5xl relative pb-20">
+        <div
+          className="absolute left-1/2 w-[90%] pointer-events-none z-0"
+          style={{ top: '-23%', transform: 'translateX(-50%)' }}
+          aria-hidden="true"
+        >
+          <img
+            src="https://i.postimg.cc/Ss6yShGy/glows.png"
+            alt=""
+            className="w-full h-auto"
+            loading="eager"
+          />
+        </div>
 
-      <a href="https://github.com/webakash1806" className="bg-orange-500 mt-5 hover:bg-orange-600 text-white px-6 py-2 rounded-full transition-all duration-300 text-sm font-semibold shadow-md hover:scale-105 hover:shadow-lg flex items-center gap-2">
-       <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 30 30"
-  className="text-white"
-  fill="currentColor"
->
-  <path d="M15,3C8.373,3,3,8.373,3,15c0,5.623,3.872,10.328,9.092,11.63C12.036,26.468,12,26.28,12,26.047v-2.051 c-0.487,0-1.303,0-1.508,0c-0.821,0-1.551-0.353-1.905-1.009c-0.393-0.729-0.461-1.844-1.435-2.526 c-0.289-0.227-0.069-0.451,0.264-0.451c0.615,0.174,1.125,0.596,1.605,1.222c0.478,0.627,0.703,0.769,1.596,0.769 c0.433,0,1.081-0.025,1.691-0.121c0.328-0.833,0.895-1.6,1.588-1.962c-3.996-0.411-5.903-2.399-5.903-5.098 c0-1.162,0.495-2.286,1.336-3.233C9.053,10.647,8.706,8.73,9.435,8c1.798,0,2.885,1.166,3.146,1.481C13.477,9.174,14.461,9,15.495,9 c1.036,0,2.024,0.174,2.922,0.483C18.675,9.17,19.763,8,21.565,8c0.732,0.731,0.381,2.656,0.102,3.594 c0.836,0.945,1.328,2.066,1.328,3.226c0,2.697-1.904,4.684-5.894,5.097C18.199,20.49,19,22.1,19,23.313v2.734 c0,0.104-0.023,0.179-0.035,0.268C23.641,24.676,27,20.236,27,15C27,8.373,21.627,3,15,3z"></path>
-</svg>
+        <div className="relative z-10">
+          <img
+            src="https://i.postimg.cc/SKcdVTr1/Dashboard2.png"
+            alt="Dashboard preview showing analytics and metrics interface"
+            className="w-full h-auto rounded-lg shadow-2xl"
+            loading="eager"
+          />
+        </div>
+      </div>
+    </section>
+  );
+});
 
-        Contribute to Devi
-      </a>
-    </div>
+Hero.displayName = 'Hero';
+
+const Home: React.FC = () => {
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <Navigation />
+      <Hero />
+    </main>
+  );
+};
+
+export default Home;
+`
+
+export const homePageNoTailwindTS = `import React, { useState } from 'react';
+import './home.css';
+
+const Home: React.FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <main className="home-root">
+      <header className="home-nav">
+        <div className="home-nav-inner">
+          <div className="home-logo">Logo</div>
+
+          <nav className="home-nav-links">
+            <a href="#getting-started">Getting started</a>
+            <a href="#components">Components</a>
+            <a href="#documentation">Documentation</a>
+          </nav>
+
+          <div className="home-nav-actions">
+            <button type="button" className="home-btn home-btn-ghost">
+              Sign in
+            </button>
+            <button type="button" className="home-btn home-btn-primary">
+              Sign Up
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="home-nav-toggle"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span />
+            <span />
+          </button>
+        </div>
+
+        {menuOpen && (
+          <div className="home-nav-mobile">
+            <a href="#getting-started" onClick={() => setMenuOpen(false)}>
+              Getting started
+            </a>
+            <a href="#components" onClick={() => setMenuOpen(false)}>
+              Components
+            </a>
+            <a href="#documentation" onClick={() => setMenuOpen(false)}>
+              Documentation
+            </a>
+            <div className="home-nav-mobile-actions">
+              <button type="button" className="home-btn home-btn-ghost">
+                Sign in
+              </button>
+              <button type="button" className="home-btn home-btn-primary">
+                Sign Up
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <section className="home-hero" id="getting-started">
+        <div className="home-badge">
+          <span>New version of template is out!</span>
+          <a href="#new-version">
+            Read more
+            <span className="home-badge-arrow">→</span>
+          </a>
+        </div>
+
+        <h1 className="home-hero-title">
+          Devi: Developer-first <br /> React starter kit
+        </h1>
+
+        <p className="home-hero-subtitle">
+          Devi is a CLI that scaffolds modern React apps with Vite, Tailwind CSS, and ShadCN UI,
+          so you can focus on shipping features instead of wiring up boilerplate.
+        </p>
+
+        <div className="home-hero-cta">
+          <button
+            type="button"
+            className="home-btn home-btn-gradient"
+            aria-label="Contribute on GitHub"
+          >
+            Contribute on GitHub
+          </button>
+        </div>
+
+        <div className="home-hero-media">
+          <div className="home-hero-glow" aria-hidden="true">
+            <img
+              src="https://i.postimg.cc/Ss6yShGy/glows.png"
+              alt=""
+              loading="eager"
+            />
+          </div>
+
+          <div className="home-hero-image">
+            <img
+              src="https://i.postimg.cc/SKcdVTr1/Dashboard2.png"
+              alt="Dashboard preview showing analytics and metrics interface"
+              loading="eager"
+            />
+          </div>
+        </div>
+      </section>
+    </main>
   );
 };
 
