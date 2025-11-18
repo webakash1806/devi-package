@@ -1,6 +1,6 @@
 {
   "name": "create-devi",
-  "version": "3.6.4",
+  "version": "3.6.5",
   "description": "A CLI tool for scaffolding React projects with modern tooling",
   "type": "module",
   "main": "dist/index.js",
