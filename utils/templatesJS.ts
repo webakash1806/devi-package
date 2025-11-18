@@ -135,7 +135,7 @@ const Navigation = React.memo(() => {
     <header className="fixed top-0 w-full z-50 border-b border-gray-800/50 bg-black/80 backdrop-blur-md">
       <nav className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="text-xl font-semibold text-white">Logo</div>
+          <div className="text-xl font-semibold text-white">Devi/webakash1806</div>
 
           <div className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <a
@@ -253,15 +253,21 @@ const Hero = React.memo(() => {
         so you can focus on shipping features instead of wiring up boilerplate.
       </p>
       <div className="flex items-center gap-4 relative z-10 mb-16">
-        <Button
-          type="button"
-          variant="gradient"
-          size="lg"
-          className="rounded-lg flex items-center justify-center"
-          aria-label="Contribute on GitHub"
+        <a
+          href="https://github.com/webakash1806/devi-package"
+          target="_blank"
+          rel="noreferrer"
         >
-          Contribute on GitHub
-        </Button>
+          <Button
+            type="button"
+            variant="gradient"
+            size="lg"
+            className="rounded-lg flex items-center justify-center"
+            aria-label="Contribute on GitHub"
+          >
+            Contribute on GitHub
+          </Button>
+        </a>
       </div>
       <div className="w-full max-w-5xl relative pb-20">
         <div
@@ -314,7 +320,7 @@ const Home = () => {
     <main className="home-root">
       <header className="home-nav">
         <div className="home-nav-inner">
-          <div className="home-logo">Logo</div>
+          <div className="home-logo">Devi/webakash1806</div>
 
           <nav className="home-nav-links">
             <a href="#getting-started">Getting started</a>
@@ -384,13 +390,19 @@ const Home = () => {
         </p>
 
         <div className="home-hero-cta">
-          <button
-            type="button"
-            className="home-btn home-btn-gradient"
-            aria-label="Contribute on GitHub"
+          <a
+            href="https://github.com/webakash1806/devi-package"
+            target="_blank"
+            rel="noreferrer"
           >
-            Contribute on GitHub
-          </button>
+            <button
+              type="button"
+              className="home-btn home-btn-gradient"
+              aria-label="Contribute on GitHub"
+            >
+              Contribute on GitHub
+            </button>
+          </a>
         </div>
 
         <div className="home-hero-media">
@@ -444,7 +456,7 @@ const App = () => {
   return (
     <Router>
       <HomeLayout>
-        
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
