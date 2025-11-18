@@ -7,23 +7,23 @@ import * as fs from "fs";
 import * as path from "path";
 import { createRequire } from "module";
 
-import { getProjectName, getProjectVariant, getRouterOption, getStyleMode } from "./src/cli/prompt";
-import { createProjectDirectories, writeFile, removeFile } from "./src/cli/fileUtils";
-import { installDependencies, installTailwind, installShadcn, installReactRouter } from "./src/cli/install";
+import { getProjectName, getProjectVariant, getRouterOption, getStyleMode } from "./src/cli/prompt.js";
+import { createProjectDirectories, writeFile, removeFile } from "./src/cli/fileUtils.js";
+import { installDependencies, installTailwind, installShadcn, installReactRouter } from "./src/cli/install.js";
 import {
   AppFileWithoutReactRouterDOMJS,
   AppFileWithReactRouterDOMJS,
   homeLayoutJS,
   homePageJS,
   jsConfig,
-} from "./utils/templatesJS";
+} from "./utils/templatesJS.js";
 import {
   AppFileWithoutReactRouterDOMTS,
   AppFileWithReactRouterDOMTS,
   homeLayoutTS,
   homePageTS,
   tsConfig,
-} from "./utils/templatesTS";
+} from "./utils/templatesTS.js";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
