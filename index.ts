@@ -7,9 +7,9 @@ import * as fs from "fs";
 import * as path from "path";
 import { createRequire } from "module";
 
-import { getProjectName, getProjectVariant, getRouterOption, getStyleMode } from "./src/cli/prompt.js";
+import { getProjectName, getProjectVariant, getRouterOption, getStyleMode, getUIComponentsOption } from "./src/cli/prompt.js";
 import { createProjectDirectories, writeFile, removeFile } from "./src/cli/fileUtils.js";
-import { installDependencies, installTailwind, installShadcn, installReactRouter } from "./src/cli/install.js";
+import { installDependencies, installTailwind, installShadcn, installReactRouter, installBasicUIComponents } from "./src/cli/install.js";
 import {
   AppFileWithoutReactRouterDOMJS,
   AppFileWithReactRouterDOMJS,
@@ -210,6 +210,12 @@ export default defineConfig({
   createProjectDirectories(".");
   createLayoutAndHome(variant, true);
   updateAppComponent(variant, installReactRouterDom, true);
+
+  // Ask if user wants basic UI components
+  const addUIComponents = await getUIComponentsOption();
+  if (addUIComponents) {
+    installBasicUIComponents();
+  }
 
   console.log(
     chalk.green(

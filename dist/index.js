@@ -5,11 +5,11 @@ import { Command } from "commander";
 import * as fs from "fs";
 import * as path from "path";
 import { createRequire } from "module";
-import { getProjectName, getProjectVariant, getRouterOption, getStyleMode } from "./src/cli/prompt.js";
+import { getProjectName, getProjectVariant, getRouterOption, getStyleMode, getUIComponentsOption } from "./src/cli/prompt.js";
 import { createProjectDirectories, writeFile, removeFile } from "./src/cli/fileUtils.js";
-import { installDependencies, installTailwind, installShadcn, installReactRouter } from "./src/cli/install.js";
-import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, jsConfig, } from "./utils/templatesJS.js";
-import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, tsConfig, } from "./utils/templatesTS.js";
+import { installDependencies, installTailwind, installShadcn, installReactRouter, installBasicUIComponents } from "./src/cli/install.js";
+import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, homePageNoTailwindJS, jsConfig, } from "./utils/templatesJS.js";
+import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, homePageNoTailwindTS, tsConfig, } from "./utils/templatesTS.js";
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json");
 const program = new Command();
@@ -128,10 +128,16 @@ export default defineConfig({
     createProjectDirectories(".");
     createLayoutAndHome(variant, true);
     updateAppComponent(variant, installReactRouterDom, true);
+    // Ask if user wants basic UI components
+    const addUIComponents = await getUIComponentsOption();
+    if (addUIComponents) {
+        installBasicUIComponents();
+    }
     console.log(chalk.green(`✅ Successfully set up project with Vite, React, Tailwind & ShadCN UI!`));
 }
 async function setupBasicProject(variant, installReactRouterDom) {
     createProjectDirectories(".");
+    writeHomeCss();
     createLayoutAndHome(variant, false, true);
     updateAppComponent(variant, installReactRouterDom, false, true);
     console.log(chalk.green(`✅ Successfully set up project with React ${variant}!`));
@@ -141,6 +147,313 @@ function ensureTypesNodeIfTs() {
         console.log(chalk.blue("📝 Installing TypeScript types for Node.js..."));
         execSync(`npm install --save-dev @types/node`, { stdio: "inherit" });
     }
+}
+function writeHomeCss() {
+    const css = `:root {
+  --home-bg: #000000;
+  --home-surface: #020617;
+  --home-surface-soft: #111827;
+  --home-border-subtle: rgba(31, 41, 55, 0.7);
+  --home-text: #ffffff;
+  --home-text-muted: #9ca3af;
+}
+
+body {
+  margin: 0;
+  background-color: var(--home-bg);
+  color: var(--home-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.home-root {
+  min-height: 100vh;
+  background-color: var(--home-bg);
+  color: var(--home-text);
+}
+
+.home-nav {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 100%;
+  z-index: 50;
+  border-bottom: 1px solid var(--home-border-subtle);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(16px);
+}
+
+.home-nav-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-logo {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.home-nav-links {
+  display: none;
+  gap: 2rem;
+}
+
+.home-nav-links a {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.home-nav-links a:hover {
+  color: #ffffff;
+}
+
+.home-nav-actions {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+}
+
+.home-nav-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.home-nav-toggle span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.home-nav-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.5rem 1.5rem;
+  background: rgba(0, 0, 0, 0.95);
+  border-top: 1px solid var(--home-border-subtle);
+}
+
+.home-nav-mobile a {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+}
+
+.home-nav-mobile a:hover {
+  color: #ffffff;
+}
+
+.home-nav-mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--home-border-subtle);
+}
+
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.home-btn-primary {
+  background: #ffffff;
+  color: #000000;
+}
+
+.home-btn-primary:hover {
+  background: #e5e7eb;
+}
+
+.home-btn-ghost {
+  background: transparent;
+  color: #ffffff;
+}
+
+.home-btn-ghost:hover {
+  background: rgba(31, 41, 55, 0.7);
+}
+
+.home-btn-gradient {
+  background-image: linear-gradient(to bottom, #ffffff, #ffffff, rgba(255, 255, 255, 0.7));
+  color: #000000;
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.home-btn-gradient:hover {
+  transform: scale(1.03);
+}
+
+.home-btn-gradient:active {
+  transform: scale(0.97);
+}
+
+.home-hero {
+  min-height: 100vh;
+  padding: 7rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+}
+
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--home-border-subtle);
+  background: rgba(31, 41, 55, 0.6);
+  margin-bottom: 1.5rem;
+}
+
+.home-badge span {
+  font-size: 0.75rem;
+  color: var(--home-text-muted);
+}
+
+.home-badge a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--home-text-muted);
+  text-decoration: none;
+}
+
+.home-badge a:hover {
+  color: #ffffff;
+}
+
+.home-badge-arrow {
+  font-size: 0.75rem;
+}
+
+.home-hero-title {
+  max-width: 48rem;
+  margin: 0 auto 1.5rem;
+  padding: 0 1.5rem;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  background-image: linear-gradient(to bottom, #ffffff, #ffffff, rgba(255, 255, 255, 0.6));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-hero-subtitle {
+  max-width: 36rem;
+  margin: 0 auto 2.5rem;
+  padding: 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--home-text-muted);
+}
+
+.home-hero-cta {
+  margin-bottom: 4rem;
+}
+
+.home-hero-media {
+  position: relative;
+  max-width: 960px;
+  width: 100%;
+  padding-bottom: 5rem;
+}
+
+.home-hero-glow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  pointer-events: none;
+  z-index: 0;
+  top: -23%;
+}
+
+.home-hero-glow img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.home-hero-image {
+  position: relative;
+  z-index: 10;
+}
+
+.home-hero-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+}
+
+@media (min-width: 768px) {
+  .home-hero-title {
+    font-size: 3rem;
+  }
+
+  .home-hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .home-nav-links {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+  }
+
+  .home-nav-actions {
+    display: flex;
+  }
+
+  .home-nav-toggle {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-hero-title {
+    font-size: 3.5rem;
+  }
+}
+`;
+    const pagesDir = path.join("src", "pages");
+    if (!fs.existsSync(pagesDir)) {
+        fs.mkdirSync(pagesDir, { recursive: true });
+    }
+    writeFile(path.join(pagesDir, "home.css"), css);
 }
 function createLayoutAndHome(variant, useShadcnLayout, minimalLayout = false) {
     const layoutDir = path.join("src", "Layout");
@@ -265,7 +578,12 @@ export default HomeLayout;
     else {
         writeFile(layoutFile, variant === "react-ts" ? homeLayoutTS : homeLayoutJS);
     }
-    writeFile(homeFile, variant === "react-ts" ? homePageTS : homePageJS);
+    if (minimalLayout) {
+        writeFile(homeFile, variant === "react-ts" ? homePageNoTailwindTS : homePageNoTailwindJS);
+    }
+    else {
+        writeFile(homeFile, variant === "react-ts" ? homePageTS : homePageJS);
+    }
 }
 function updateAppComponent(variant, installReactRouterDom, useShadcnLayout = false, minimalLayout = false) {
     const appFile = fs.existsSync("src/App.tsx") ? "src/App.tsx" : "src/App.jsx";

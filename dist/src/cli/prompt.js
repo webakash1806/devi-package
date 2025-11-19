@@ -50,3 +50,36 @@ export const getRouterOption = async () => {
     ]);
     return router;
 };
+export const getCodeQualityOption = async () => {
+    const { codeQuality } = await inquirer.prompt([
+        {
+            type: "confirm",
+            name: "codeQuality",
+            message: "Do you want to setup Code Quality tools? (Husky, Prettier, Lint-staged)",
+            default: true,
+        },
+    ]);
+    return codeQuality;
+};
+export const getEnvOption = async () => {
+    const { envSetup } = await inquirer.prompt([
+        {
+            type: "confirm",
+            name: "envSetup",
+            message: "Do you want to setup Environment Variables? (.env + validation)",
+            default: true,
+        },
+    ]);
+    return envSetup;
+};
+export const getUIComponentsOption = async () => {
+    const { uiComponents } = await inquirer.prompt([
+        {
+            type: "confirm",
+            name: "uiComponents",
+            message: "Do you want to add basic UI components? (Accordion, Input, Select, Textarea)",
+            default: true,
+        },
+    ]);
+    return uiComponents;
+};
