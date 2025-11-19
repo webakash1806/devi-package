@@ -5,11 +5,15 @@ import { Command } from "commander";
 import * as fs from "fs";
 import * as path from "path";
 import { createRequire } from "module";
-import { getProjectName, getProjectVariant, getRouterOption, getStyleMode, getUIComponentsOption } from "./src/cli/prompt.js";
-import { createProjectDirectories, writeFile, removeFile } from "./src/cli/fileUtils.js";
-import { installDependencies, installTailwind, installShadcn, installReactRouter, installBasicUIComponents } from "./src/cli/install.js";
+import { getProjectName, getProjectVariant, getRouterOption, getStyleMode, getCodeQualityOption, getEnvOption, getUIComponentsOption } from "./src/cli/prompt.js";
+import { createProjectDirectories, writeFile, removeFile, updatePackageJson, updateTsConfig } from "./src/cli/fileUtils.js";
+import { installDependencies, installTailwind, installShadcn, installReactRouter, installCodeQualityDependencies, initHusky, installEnvDependencies, installLottieReact, installBasicUIComponents } from "./src/cli/install.js";
 import { AppFileWithoutReactRouterDOMJS, AppFileWithReactRouterDOMJS, homeLayoutJS, homePageJS, homePageNoTailwindJS, jsConfig, } from "./utils/templatesJS.js";
 import { AppFileWithoutReactRouterDOMTS, AppFileWithReactRouterDOMTS, homeLayoutTS, homePageTS, homePageNoTailwindTS, tsConfig, } from "./utils/templatesTS.js";
+import { prettierConfig, lintStagedConfig, vsCodeSettings } from "./utils/templatesConfig.js";
+import { envExample, envValidationTS, envValidationJS, gitignoreEnvAddition } from "./utils/templatesEnv.js";
+import { lottie404Animation, notFound404TS, notFound404JS, notFound404NoTailwindTS, notFound404NoTailwindJS, notFound404CSS } from "./utils/templates404.js";
+import { errorBoundaryTS, errorBoundaryJS, errorBoundaryNoTailwindTS, errorBoundaryNoTailwindJS, errorBoundaryCSS } from "./utils/templatesErrorBoundary.js";
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json");
 const program = new Command();
@@ -25,6 +29,8 @@ program
         installDependencies();
         const styleMode = await getStyleMode();
         const installReactRouterDom = styleMode !== "none" ? await getRouterOption() : false;
+        const setupCodeQuality = await getCodeQualityOption();
+        const setupEnv = await getEnvOption();
         switch (styleMode) {
             case "tailwind":
                 await setupTailwindProject(variant, installReactRouterDom);
@@ -36,6 +42,17 @@ program
                 await setupBasicProject(variant, installReactRouterDom);
                 break;
         }
+        if (setupCodeQuality) {
+            await setupCodeQualityTools(projectName);
+        }
+        if (setupEnv) {
+            await setupEnvironmentVariables(variant);
+        }
+        if (installReactRouterDom) {
+            await setup404Page(variant, styleMode);
+        }
+        // Always setup Error Boundary for production safety
+        await setupErrorBoundary(variant, styleMode);
         printNextSteps(projectName);
     }
     catch (error) {
@@ -634,6 +651,119 @@ export default App;
                 : AppFileWithReactRouterDOMJS;
     }
     writeFile(appFile, appContent);
+}
+async function setupCodeQualityTools(projectName) {
+    console.log(chalk.yellow("\n🛡️  Setting up Code Quality tools..."));
+    installCodeQualityDependencies();
+    // Write config files
+    writeFile(".prettierrc", prettierConfig);
+    writeFile(".lintstagedrc", lintStagedConfig);
+    // VS Code settings
+    const vscodeDir = ".vscode";
+    if (!fs.existsSync(vscodeDir)) {
+        fs.mkdirSync(vscodeDir);
+    }
+    writeFile(path.join(vscodeDir, "settings.json"), vsCodeSettings);
+    // Init Husky
+    initHusky();
+    writeFile(".husky/pre-commit", "npx lint-staged");
+    // Update package.json
+    updatePackageJson(".", (json) => {
+        json.scripts = {
+            ...json.scripts,
+            "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+            "format": "prettier --write .",
+            "prepare": "husky"
+        };
+        return json;
+    });
+    // Enforce Strict Mode in tsconfig
+    updateTsConfig(".", (json) => {
+        if (!json.compilerOptions)
+            json.compilerOptions = {};
+        json.compilerOptions.strict = true;
+        json.compilerOptions.noImplicitAny = true;
+        return json;
+    });
+    console.log(chalk.green("✅ Code Quality tools configured successfully!"));
+}
+async function setupEnvironmentVariables(variant) {
+    console.log(chalk.yellow("\n🔐 Setting up Environment Variables..."));
+    installEnvDependencies();
+    // Create .env.example
+    writeFile(".env.example", envExample);
+    // Create src/config directory
+    const configDir = path.join("src", "config");
+    if (!fs.existsSync(configDir)) {
+        fs.mkdirSync(configDir, { recursive: true });
+    }
+    // Create env validation file
+    const envFile = path.join(configDir, variant === "react-ts" ? "env.ts" : "env.js");
+    const envContent = variant === "react-ts" ? envValidationTS : envValidationJS;
+    writeFile(envFile, envContent);
+    // Update .gitignore
+    const gitignorePath = ".gitignore";
+    if (fs.existsSync(gitignorePath)) {
+        const currentGitignore = fs.readFileSync(gitignorePath, "utf-8");
+        if (!currentGitignore.includes(".env")) {
+            fs.appendFileSync(gitignorePath, gitignoreEnvAddition);
+        }
+    }
+    else {
+        writeFile(gitignorePath, gitignoreEnvAddition);
+    }
+    console.log(chalk.green("✅ Environment variables configured successfully!"));
+    console.log(chalk.yellow("📝 Remember to:"));
+    console.log(chalk.yellow("   1. Copy .env.example to .env"));
+    console.log(chalk.yellow("   2. Fill in your actual values in .env"));
+    console.log(chalk.yellow("   3. Import env from '@/config/env' to use validated env vars"));
+}
+async function setup404Page(variant, styleMode) {
+    console.log(chalk.yellow("\n🚫 Setting up 404 Error Page..."));
+    installLottieReact();
+    // Create assets directory
+    const assetsDir = path.join("src", "assets");
+    if (!fs.existsSync(assetsDir)) {
+        fs.mkdirSync(assetsDir, { recursive: true });
+    }
+    // Save Lottie animation JSON
+    writeFile(path.join(assetsDir, "404-animation.json"), lottie404Animation);
+    // Create 404 page component
+    const pagesDir = path.join("src", "pages");
+    const notFoundFile = path.join(pagesDir, variant === "react-ts" ? "NotFound.tsx" : "NotFound.jsx");
+    let notFoundContent;
+    if (styleMode === "none") {
+        notFoundContent = variant === "react-ts" ? notFound404NoTailwindTS : notFound404NoTailwindJS;
+        // Also create CSS file for non-Tailwind version
+        writeFile(path.join(pagesDir, "NotFound.css"), notFound404CSS);
+    }
+    else {
+        notFoundContent = variant === "react-ts" ? notFound404TS : notFound404JS;
+    }
+    writeFile(notFoundFile, notFoundContent);
+    console.log(chalk.green("✅ 404 Error Page configured successfully!"));
+}
+async function setupErrorBoundary(variant, styleMode) {
+    console.log(chalk.yellow("\n🛡️  Setting up Error Boundary..."));
+    // Create components directory if it doesn't exist
+    const componentsDir = path.join("src", "components");
+    if (!fs.existsSync(componentsDir)) {
+        fs.mkdirSync(componentsDir, { recursive: true });
+    }
+    // Create Error Boundary component
+    const errorBoundaryFile = path.join(componentsDir, variant === "react-ts" ? "ErrorBoundary.tsx" : "ErrorBoundary.jsx");
+    let errorBoundaryContent;
+    if (styleMode === "none") {
+        errorBoundaryContent = variant === "react-ts" ? errorBoundaryNoTailwindTS : errorBoundaryNoTailwindJS;
+        // Also create CSS file for non-Tailwind version
+        writeFile(path.join(componentsDir, "ErrorBoundary.css"), errorBoundaryCSS);
+    }
+    else {
+        errorBoundaryContent = variant === "react-ts" ? errorBoundaryTS : errorBoundaryJS;
+    }
+    writeFile(errorBoundaryFile, errorBoundaryContent);
+    console.log(chalk.green("✅ Error Boundary configured successfully!"));
+    console.log(chalk.yellow("📝 Note: Wrap your App with <ErrorBoundary> in main.tsx/jsx"));
 }
 function printNextSteps(projectName) {
     console.log(chalk.yellow("\n👉 Done. Now run:\n"));
