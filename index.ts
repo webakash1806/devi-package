@@ -47,7 +47,7 @@ program
   .version(version, "-v, --version", "Display version number")
   .option("-t, --template <name>", "Use a predefined template (typescript-full, typescript-minimal, javascript-full, javascript-minimal, basic-ts, basic-js)")
   .option("--no-install", "Skip dependency installation")
-  .option("-pm, --package-manager <pm>", "Choose package manager (npm, yarn, pnpm)", "npm")
+  .option("-p, --package-manager <pm>", "Choose package manager (npm, yarn, pnpm)", "npm")
   .option("--dry-run", "Show what would be created without creating anything")
   .option("--verbose", "Enable verbose logging")
   .option("--debug", "Enable debug logging")
@@ -156,91 +156,91 @@ ${chalk.bold('Examples:')}
     if (cliOptions.dryRun) {
       console.log(chalk.yellow("\n🔍 DRY RUN MODE - Nothing will be created\n"));
       console.log(chalk.bold("Configuration:"));
-      console.log(`  Project Name: ${ chalk.cyan(projectName) } `);
-      console.log(`  Variant: ${ chalk.cyan(variant) } `);
-      console.log(`  Style Mode: ${ chalk.cyan(styleMode) } `);
-      console.log(`  Router: ${ chalk.cyan(installReactRouterDom ? 'Yes' : 'No') } `);
-      console.log(`  Code Quality: ${ chalk.cyan(setupCodeQuality ? 'Yes' : 'No') } `);
-      console.log(`  Environment: ${ chalk.cyan(setupEnv ? 'Yes' : 'No') } `);
-      console.log(`  UI Components: ${ chalk.cyan(setupUIComponents ? 'Yes' : 'No') } `);
-      console.log(`  Package Manager: ${ chalk.cyan(cliOptions.packageManager) } `);
-      console.log(`  Install Dependencies: ${ chalk.cyan(cliOptions.install ? 'Yes' : 'No') } `);
+      console.log(`  Project Name: ${chalk.cyan(projectName)} `);
+      console.log(`  Variant: ${chalk.cyan(variant)} `);
+      console.log(`  Style Mode: ${chalk.cyan(styleMode)} `);
+      console.log(`  Router: ${chalk.cyan(installReactRouterDom ? 'Yes' : 'No')} `);
+      console.log(`  Code Quality: ${chalk.cyan(setupCodeQuality ? 'Yes' : 'No')} `);
+      console.log(`  Environment: ${chalk.cyan(setupEnv ? 'Yes' : 'No')} `);
+      console.log(`  UI Components: ${chalk.cyan(setupUIComponents ? 'Yes' : 'No')} `);
+      console.log(`  Package Manager: ${chalk.cyan(cliOptions.packageManager)} `);
+      console.log(`  Install Dependencies: ${chalk.cyan(cliOptions.install ? 'Yes' : 'No')} `);
 
       console.log(chalk.bold("\nCommands that would run:"));
-      console.log(`  ${ chalk.gray('npm create vite@latest') } ${ projectName } ${ chalk.gray('--template') } ${ variant } `);
+      console.log(`  ${chalk.gray('npm create vite@latest')} ${projectName} ${chalk.gray('--template')} ${variant} `);
       if (cliOptions.install) {
-        console.log(`  ${ chalk.gray('cd') } ${ projectName } `);
-        console.log(`  ${ chalk.gray(cliOptions.packageManager) } install`);
+        console.log(`  ${chalk.gray('cd')} ${projectName} `);
+        console.log(`  ${chalk.gray(cliOptions.packageManager)} install`);
         if (styleMode !== "none") {
-          console.log(`  ${ chalk.gray(cliOptions.packageManager) } install - D tailwindcss @tailwindcss/vite`);
+          console.log(`  ${chalk.gray(cliOptions.packageManager)} install - D tailwindcss @tailwindcss/vite`);
         }
-if (styleMode === "tailwind + shadcn") {
-  console.log(`  ${chalk.gray('npx shadcn@latest init')}`);
-}
-if (installReactRouterDom) {
-  console.log(`  ${chalk.gray(cliOptions.packageManager)} install react-router-dom`);
-}
+        if (styleMode === "tailwind + shadcn") {
+          console.log(`  ${chalk.gray('npx shadcn@latest init')}`);
+        }
+        if (installReactRouterDom) {
+          console.log(`  ${chalk.gray(cliOptions.packageManager)} install react-router-dom`);
+        }
       }
 
-console.log(chalk.yellow("\n✅ Dry run complete. No files were created.\n"));
-return;
+      console.log(chalk.yellow("\n✅ Dry run complete. No files were created.\n"));
+      return;
     }
 
-try {
-  logger.verbose("Creating Vite project...");
-  createViteProject(projectName, variant, cliOptions.packageManager);
+    try {
+      logger.verbose("Creating Vite project...");
+      createViteProject(projectName, variant, cliOptions.packageManager);
 
-  process.chdir(projectName);
-  logger.debug(`Changed directory to: ${projectName}`);
+      process.chdir(projectName);
+      logger.debug(`Changed directory to: ${projectName}`);
 
-  if (cliOptions.install) {
-    installDependencies();
-  } else {
-    logger.warn("Skipping dependency installation (--no-install flag)");
-  }
+      if (cliOptions.install) {
+        installDependencies();
+      } else {
+        logger.warn("Skipping dependency installation (--no-install flag)");
+      }
 
-  switch (styleMode) {
-    case "tailwind":
-      await setupTailwindProject(variant, installReactRouterDom, cliOptions.install);
-      break;
-    case "tailwind + shadcn":
-      await setupTailwindShadcnProject(variant, installReactRouterDom, setupUIComponents, cliOptions.install);
-      break;
-    default:
-      await setupBasicProject(variant, installReactRouterDom);
-      break;
-  }
+      switch (styleMode) {
+        case "tailwind":
+          await setupTailwindProject(variant, installReactRouterDom, cliOptions.install);
+          break;
+        case "tailwind + shadcn":
+          await setupTailwindShadcnProject(variant, installReactRouterDom, setupUIComponents, cliOptions.install);
+          break;
+        default:
+          await setupBasicProject(variant, installReactRouterDom);
+          break;
+      }
 
-  if (setupCodeQuality) {
-    await setupCodeQualityTools(projectName, cliOptions.install);
-  }
+      if (setupCodeQuality) {
+        await setupCodeQualityTools(projectName, cliOptions.install);
+      }
 
-  if (setupEnv) {
-    await setupEnvironmentVariables(variant, cliOptions.install);
-  }
+      if (setupEnv) {
+        await setupEnvironmentVariables(variant, cliOptions.install);
+      }
 
-  if (installReactRouterDom) {
-    await setup404Page(variant, styleMode, cliOptions.install);
-  }
+      if (installReactRouterDom) {
+        await setup404Page(variant, styleMode, cliOptions.install);
+      }
 
-  if (setupTesting) {
-    await setupTestingInfrastructure(variant, cliOptions.install);
-  }
+      if (setupTesting) {
+        await setupTestingInfrastructure(variant, cliOptions.install);
+      }
 
-  if (setupGit) {
-    await setupGitRepository(projectName);
-  }
+      if (setupGit) {
+        await setupGitRepository(projectName);
+      }
 
-  // Always setup Error Boundary for production safety
-  await setupErrorBoundary(variant, styleMode);
+      // Always setup Error Boundary for production safety
+      await setupErrorBoundary(variant, styleMode);
 
-  printNextSteps(projectName, cliOptions);
-} catch (error: any) {
-  logger.error("Error setting up the project:");
-  logger.error(error.message);
-  logger.debug(error.stack);
-  process.exit(1);
-}
+      printNextSteps(projectName, cliOptions);
+    } catch (error: any) {
+      logger.error("Error setting up the project:");
+      logger.error(error.message);
+      logger.debug(error.stack);
+      process.exit(1);
+    }
   });
 
 program.parse(process.argv);

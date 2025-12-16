@@ -27,7 +27,7 @@ program
     .version(version, "-v, --version", "Display version number")
     .option("-t, --template <name>", "Use a predefined template (typescript-full, typescript-minimal, javascript-full, javascript-minimal, basic-ts, basic-js)")
     .option("--no-install", "Skip dependency installation")
-    .option("-pm, --package-manager <pm>", "Choose package manager (npm, yarn, pnpm)", "npm")
+    .option("-p, --package-manager <pm>", "Choose package manager (npm, yarn, pnpm)", "npm")
     .option("--dry-run", "Show what would be created without creating anything")
     .option("--verbose", "Enable verbose logging")
     .option("--debug", "Enable debug logging")
