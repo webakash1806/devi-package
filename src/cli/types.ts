@@ -1,0 +1,100 @@
+export type Variant = "react" | "react-ts";
+export type StyleMode = "tailwind" | "tailwind + shadcn" | "none";
+export type PackageManager = "npm" | "yarn" | "pnpm";
+
+export interface CLIOptions {
+    template?: string;
+    install: boolean;
+    packageManager: PackageManager;
+    dryRun: boolean;
+    verbose: boolean;
+    debug: boolean;
+}
+
+export interface TemplateConfig {
+    name: string;
+    description: string;
+    variant: Variant;
+    styleMode: StyleMode;
+    router: boolean;
+    codeQuality: boolean;
+    env: boolean;
+    uiComponents: boolean;
+    testing: boolean;
+    git: boolean;
+}
+
+export const TEMPLATE_PRESETS: Record<string, TemplateConfig> = {
+    "typescript-full": {
+        name: "TypeScript Full",
+        description: "TypeScript with all features enabled",
+        variant: "react-ts",
+        styleMode: "tailwind + shadcn",
+        router: true,
+        codeQuality: true,
+        env: true,
+        uiComponents: true,
+        testing: true,
+        git: true,
+    },
+    "typescript-minimal": {
+        name: "TypeScript Minimal",
+        description: "TypeScript with Tailwind CSS only",
+        variant: "react-ts",
+        styleMode: "tailwind",
+        router: false,
+        codeQuality: false,
+        env: false,
+        uiComponents: false,
+        testing: false,
+        git: true,
+    },
+    "javascript-full": {
+        name: "JavaScript Full",
+        description: "JavaScript with all features enabled",
+        variant: "react",
+        styleMode: "tailwind + shadcn",
+        router: true,
+        codeQuality: true,
+        env: true,
+        uiComponents: true,
+        testing: true,
+        git: true,
+    },
+    "javascript-minimal": {
+        name: "JavaScript Minimal",
+        description: "JavaScript with Tailwind CSS only",
+        variant: "react",
+        styleMode: "tailwind",
+        router: false,
+        codeQuality: false,
+        env: false,
+        uiComponents: false,
+        testing: false,
+        git: true,
+    },
+    "basic-ts": {
+        name: "Basic TypeScript",
+        description: "TypeScript without any styling framework",
+        variant: "react-ts",
+        styleMode: "none",
+        router: false,
+        codeQuality: false,
+        env: false,
+        uiComponents: false,
+        testing: false,
+        git: true,
+    },
+    "basic-js": {
+        name: "Basic JavaScript",
+        description: "JavaScript without any styling framework",
+        variant: "react",
+        styleMode: "none",
+        router: false,
+        codeQuality: false,
+        env: false,
+        uiComponents: false,
+        testing: false,
+        git: true,
+    },
+};

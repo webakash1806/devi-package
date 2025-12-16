@@ -1,11 +1,32 @@
 import inquirer from "inquirer";
+import * as fs from "fs";
+import { logger } from "./logger.js";
 export const getProjectName = async () => {
     const { projectName } = await inquirer.prompt([
         {
             type: "input",
             name: "projectName",
             message: "Enter your project name:",
-            validate: (input) => (input ? true : "Project name cannot be empty!"),
+            validate: (input) => {
+                if (!input || !input.trim()) {
+                    return "Project name cannot be empty!";
+                }
+                const trimmedInput = input.trim();
+                // Check for invalid npm package name characters
+                if (!/^[a-z0-9-_@/]+$/i.test(trimmedInput)) {
+                    return "Project name can only contain letters, numbers, dashes, underscores, @ and /";
+                }
+                // Check if starts with . or _
+                if (trimmedInput.startsWith(".") || trimmedInput.startsWith("_")) {
+                    return "Project name cannot start with . or _";
+                }
+                // Check if directory already exists
+                if (fs.existsSync(trimmedInput)) {
+                    return `Directory "${trimmedInput}" already exists. Please choose a different name.`;
+                }
+                logger.verbose(`Project name validated: ${trimmedInput}`);
+                return true;
+            },
         },
     ]);
     return projectName;
@@ -82,4 +103,26 @@ export const getUIComponentsOption = async () => {
         },
     ]);
     return uiComponents;
+};
+export const getTestingOption = async () => {
+    const { testing } = await inquirer.prompt([
+        {
+            type: "confirm",
+            name: "testing",
+            message: "Do you want to setup Testing? (Vitest + React Testing Library)",
+            default: false,
+        },
+    ]);
+    return testing;
+};
+export const getGitOption = async () => {
+    const { git } = await inquirer.prompt([
+        {
+            type: "confirm",
+            name: "git",
+            message: "Do you want to initialize Git repository?",
+            default: true,
+        },
+    ]);
+    return git;
 };

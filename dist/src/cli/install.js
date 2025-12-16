@@ -1,46 +1,66 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
+import { logger } from "./logger.js";
+let packageManager = "npm";
+export const setPackageManager = (pm) => {
+    packageManager = pm;
+    logger.debug(`Package manager set to: ${pm}`);
+};
+export const getPackageManager = () => {
+    return packageManager;
+};
+const getInstallCommand = (dev = false) => {
+    const commands = {
+        npm: { install: "npm install", installDev: "npm install -D" },
+        yarn: { install: "yarn add", installDev: "yarn add -D" },
+        pnpm: { install: "pnpm add", installDev: "pnpm add -D" },
+    };
+    return dev ? commands[packageManager].installDev : commands[packageManager].install;
+};
+const runCommand = (command, description) => {
+    logger.verbose(description);
+    logger.debug(`Running command: ${command}`);
+    execSync(command, { stdio: "inherit" });
+};
 export const installDependencies = () => {
     console.log(chalk.blue("📦 Installing dependencies..."));
-    execSync(`npm install`, { stdio: "inherit" });
+    const cmd = packageManager === "npm" ? "npm install" : packageManager === "yarn" ? "yarn install" : "pnpm install";
+    runCommand(cmd, "Installing project dependencies");
 };
 export const installTailwind = () => {
     console.log(chalk.blue("🎨 Installing Tailwind CSS & Vite plugin..."));
-    execSync(`npm install -D tailwindcss @tailwindcss/vite postcss autoprefixer`, { stdio: "inherit" });
+    const cmd = `${getInstallCommand(true)} tailwindcss @tailwindcss/vite postcss autoprefixer`;
+    runCommand(cmd, "Installing Tailwind CSS and related packages");
 };
 export const installShadcn = () => {
     console.log(chalk.blue("🛠 Installing ShadCN UI..."));
-    execSync(`npx shadcn@latest init`, { stdio: "inherit" });
+    runCommand("npx shadcn@latest init", "Initializing ShadCN UI");
     console.log(chalk.blue("📦 Installing ShadCN components..."));
-    execSync(`npx shadcn@latest add button`, { stdio: "inherit" });
+    runCommand("npx shadcn@latest add button", "Installing button component");
 };
 export const installReactRouter = () => {
     console.log(chalk.blue("🔩 Installing React Router DOM..."));
-    execSync(`npm install react-router-dom`, { stdio: "inherit" });
+    const cmd = `${getInstallCommand()} react-router-dom`;
+    runCommand(cmd, "Installing React Router DOM");
 };
 export const installCodeQualityDependencies = () => {
     console.log(chalk.blue("🛡️  Installing Code Quality tools..."));
-    execSync(`npm install -D husky lint-staged prettier eslint-plugin-simple-import-sort @trivago/prettier-plugin-sort-imports prettier-plugin-tailwindcss`, { stdio: "inherit" });
+    const cmd = `${getInstallCommand(true)} husky lint-staged prettier eslint-plugin-simple-import-sort @trivago/prettier-plugin-sort-imports prettier-plugin-tailwindcss`;
+    runCommand(cmd, "Installing code quality dependencies");
 };
 export const initHusky = () => {
     console.log(chalk.blue("🐶 Initializing Husky..."));
-    execSync(`npx husky init`, { stdio: "inherit" });
-    // Add pre-commit hook
-    const preCommitPath = ".husky/pre-commit";
-    // npx husky init creates a pre-commit file with "npm test", we want to replace/append
-    // For simplicity in this cross-platform CLI, we'll just write the file content we want.
-    // Note: On Windows, echo might behave differently, so using node fs in fileUtils is safer, 
-    // but here we are in install.ts. Let's rely on fileUtils later or just use a simple command if possible.
-    // Actually, 'npx husky init' sets up "npm test" in .husky/pre-commit. 
-    // We want "npx lint-staged".
+    runCommand("npx husky init", "Initializing Husky Git hooks");
 };
 export const installEnvDependencies = () => {
     console.log(chalk.blue("🔐 Installing environment validation dependencies..."));
-    execSync(`npm install zod`, { stdio: "inherit" });
+    const cmd = `${getInstallCommand()} zod`;
+    runCommand(cmd, "Installing Zod for environment validation");
 };
 export const installLottieReact = () => {
     console.log(chalk.blue("🎬 Installing Lottie React..."));
-    execSync(`npm install lottie-react`, { stdio: "inherit" });
+    const cmd = `${getInstallCommand()} lottie-react`;
+    runCommand(cmd, "Installing Lottie React for animations");
 };
 export const installBasicUIComponents = () => {
     console.log(chalk.blue("🎨 Installing basic UI components..."));
@@ -53,11 +73,16 @@ export const installBasicUIComponents = () => {
     components.forEach(({ name, url }) => {
         console.log(chalk.gray(`  Installing ${name}...`));
         try {
-            execSync(`npx shadcn@latest add ${url} -y`, { stdio: "inherit" });
+            runCommand(`npx shadcn@latest add ${url} -y`, `Installing ${name} component`);
         }
         catch (error) {
             console.error(chalk.red(`Failed to install ${name}`));
         }
     });
     console.log(chalk.green("✅ UI components installed successfully!"));
+};
+export const installTestingDependencies = () => {
+    console.log(chalk.blue("🧪 Installing testing dependencies..."));
+    const cmd = `${getInstallCommand(true)} vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom @vitest/ui`;
+    runCommand(cmd, "Installing Vitest and React Testing Library");
 };

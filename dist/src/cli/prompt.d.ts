@@ -5,3 +5,5 @@ export declare const getRouterOption: () => Promise<boolean>;
 export declare const getCodeQualityOption: () => Promise<boolean>;
 export declare const getEnvOption: () => Promise<boolean>;
 export declare const getUIComponentsOption: () => Promise<boolean>;
+export declare const getTestingOption: () => Promise<boolean>;
+export declare const getGitOption: () => Promise<boolean>;

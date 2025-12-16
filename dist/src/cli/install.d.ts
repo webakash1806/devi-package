@@ -1,3 +1,6 @@
+import type { PackageManager } from "./types.js";
+export declare const setPackageManager: (pm: PackageManager) => void;
+export declare const getPackageManager: () => PackageManager;
 export declare const installDependencies: () => void;
 export declare const installTailwind: () => void;
 export declare const installShadcn: () => void;
@@ -7,3 +10,4 @@ export declare const initHusky: () => void;
 export declare const installEnvDependencies: () => void;
 export declare const installLottieReact: () => void;
 export declare const installBasicUIComponents: () => void;
+export declare const installTestingDependencies: () => void;

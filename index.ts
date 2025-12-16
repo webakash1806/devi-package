@@ -7,9 +7,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { createRequire } from "module";
 
-import { getProjectName, getProjectVariant, getRouterOption, getStyleMode, getCodeQualityOption, getEnvOption, getUIComponentsOption } from "./src/cli/prompt.js";
+import { getProjectName, getProjectVariant, getRouterOption, getStyleMode, getCodeQualityOption, getEnvOption, getUIComponentsOption, getTestingOption, getGitOption } from "./src/cli/prompt.js";
 import { createProjectDirectories, writeFile, removeFile, updatePackageJson, updateTsConfig } from "./src/cli/fileUtils.js";
-import { installDependencies, installTailwind, installShadcn, installReactRouter, installCodeQualityDependencies, initHusky, installEnvDependencies, installLottieReact, installBasicUIComponents } from "./src/cli/install.js";
+import { installDependencies, installTailwind, installShadcn, installReactRouter, installCodeQualityDependencies, initHusky, installEnvDependencies, installLottieReact, installBasicUIComponents, setPackageManager, getPackageManager, installTestingDependencies } from "./src/cli/install.js";
+import { logger, LogLevel } from "./src/cli/logger.js";
+import type { CLIOptions, TemplateConfig, Variant } from "./src/cli/types.js";
+import { TEMPLATE_PRESETS } from "./src/cli/types.js";
 import {
   AppFileWithoutReactRouterDOMJS,
   AppFileWithReactRouterDOMJS,
@@ -28,73 +31,221 @@ import {
 } from "./utils/templatesTS.js";
 import { prettierConfig, lintStagedConfig, vsCodeSettings } from "./utils/templatesConfig.js";
 import { envExample, envValidationTS, envValidationJS, gitignoreEnvAddition } from "./utils/templatesEnv.js";
+import { vitestConfigTS, vitestConfigJS, testSetupTS, testSetupJS, exampleTestTS, exampleTestJS } from "./utils/templatesTest.js";
+import { gitAttributesTemplate } from "./utils/templatesGit.js";
 import { lottie404Animation, notFound404TS, notFound404JS, notFound404NoTailwindTS, notFound404NoTailwindJS, notFound404CSS } from "./utils/templates404.js";
 import { errorBoundaryTS, errorBoundaryJS, errorBoundaryNoTailwindTS, errorBoundaryNoTailwindJS, errorBoundaryCSS } from "./utils/templatesErrorBoundary.js";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
 
-type Variant = "react" | "react-ts";
-
 const program = new Command();
 
 program
-  .version(version)
-  .action(async () => {
+  .name("create-devi")
+  .description("A CLI tool for scaffolding React projects with modern tooling")
+  .version(version, "-v, --version", "Display version number")
+  .option("-t, --template <name>", "Use a predefined template (typescript-full, typescript-minimal, javascript-full, javascript-minimal, basic-ts, basic-js)")
+  .option("--no-install", "Skip dependency installation")
+  .option("-pm, --package-manager <pm>", "Choose package manager (npm, yarn, pnpm)", "npm")
+  .option("--dry-run", "Show what would be created without creating anything")
+  .option("--verbose", "Enable verbose logging")
+  .option("--debug", "Enable debug logging")
+  .addHelpText('after', `
+${chalk.bold('Template Presets:')}
+  ${chalk.cyan('typescript-full')}      TypeScript with all features enabled
+  ${chalk.cyan('typescript-minimal')}   TypeScript with Tailwind CSS only
+  ${chalk.cyan('javascript-full')}      JavaScript with all features enabled
+  ${chalk.cyan('javascript-minimal')}   JavaScript with Tailwind CSS only
+  ${chalk.cyan('basic-ts')}             TypeScript without styling
+  ${chalk.cyan('basic-js')}             JavaScript without styling
+
+${chalk.bold('Examples:')}
+  ${chalk.gray('$')} npm create devi@latest
+  ${chalk.gray('$')} npm create devi@latest -- --template typescript-full
+  ${chalk.gray('$')} npm create devi@latest -- --template typescript-minimal --no-install
+  ${chalk.gray('$')} npm create devi@latest -- --package-manager pnpm --verbose
+  ${chalk.gray('$')} npm create devi@latest -- --dry-run
+`)
+  .action(async (options) => {
+    const cliOptions: CLIOptions = {
+      template: options.template,
+      install: options.install !== false,
+      packageManager: options.packageManager as "npm" | "yarn" | "pnpm",
+      dryRun: options.dryRun || false,
+      verbose: options.verbose || false,
+      debug: options.debug || false,
+    };
+
+    // Set logger level based on flags
+    if (cliOptions.debug) {
+      logger.setLevel(LogLevel.DEBUG);
+    } else if (cliOptions.verbose) {
+      logger.setLevel(LogLevel.VERBOSE);
+    }
+
+    // Validate package manager
+    if (!['npm', 'yarn', 'pnpm'].includes(cliOptions.packageManager)) {
+      logger.error(`Invalid package manager: ${cliOptions.packageManager}. Must be npm, yarn, or pnpm.`);
+      process.exit(1);
+    }
+
+    // Set the package manager globally
+    setPackageManager(cliOptions.packageManager);
+    logger.debug(`CLI Options: ${JSON.stringify(cliOptions, null, 2)}`);
+
     console.log(chalk.green("\n🚀 Welcome to the DEVI setup for REACT\n"));
 
-    const projectName = await getProjectName();
-    const variant = await getProjectVariant();
+    let projectName: string;
+    let variant: Variant;
+    let styleMode: "tailwind" | "tailwind + shadcn" | "none";
+    let installReactRouterDom: boolean;
+    let setupCodeQuality: boolean;
+    let setupEnv: boolean;
+    let setupUIComponents: boolean = false;
+    let setupTesting: boolean = false;
+    let setupGit: boolean = true;
 
-    try {
-      createViteProject(projectName, variant);
-
-      process.chdir(projectName);
-      installDependencies();
-
-      const styleMode = await getStyleMode();
-      const installReactRouterDom =
-        styleMode !== "none" ? await getRouterOption() : false;
-
-      const setupCodeQuality = await getCodeQualityOption();
-      const setupEnv = await getEnvOption();
-
-      switch (styleMode) {
-        case "tailwind":
-          await setupTailwindProject(variant, installReactRouterDom);
-          break;
-        case "tailwind + shadcn":
-          await setupTailwindShadcnProject(variant, installReactRouterDom);
-          break;
-        default:
-          await setupBasicProject(variant, installReactRouterDom);
-          break;
+    // Check if template is provided
+    if (cliOptions.template) {
+      const template = TEMPLATE_PRESETS[cliOptions.template];
+      if (!template) {
+        logger.error(`Unknown template: ${cliOptions.template}`);
+        logger.info(`Available templates: ${Object.keys(TEMPLATE_PRESETS).join(', ')}`);
+        process.exit(1);
       }
 
-      if (setupCodeQuality) {
-        await setupCodeQualityTools(projectName);
-      }
+      logger.info(`Using template: ${chalk.cyan(template.name)}`);
+      logger.verbose(`Template description: ${template.description}`);
 
-      if (setupEnv) {
-        await setupEnvironmentVariables(variant);
-      }
+      // Get project name only
+      projectName = await getProjectName();
 
-      if (installReactRouterDom) {
-        await setup404Page(variant, styleMode);
-      }
+      // Use template configuration
+      variant = template.variant;
+      styleMode = template.styleMode;
+      installReactRouterDom = template.router;
+      setupCodeQuality = template.codeQuality;
+      setupEnv = template.env;
+      setupUIComponents = template.uiComponents;
+      setupTesting = template.testing;
+      setupGit = template.git;
 
-      // Always setup Error Boundary for production safety
-      await setupErrorBoundary(variant, styleMode);
-
-      printNextSteps(projectName);
-    } catch (error: any) {
-      console.error(chalk.red("❌ Error setting up the project:", error.message));
+      logger.verbose(`Variant: ${variant}`);
+      logger.verbose(`Style: ${styleMode}`);
+      logger.verbose(`Router: ${installReactRouterDom}`);
+      logger.verbose(`Code Quality: ${setupCodeQuality}`);
+      logger.verbose(`Env Setup: ${setupEnv}`);
+      logger.verbose(`UI Components: ${setupUIComponents}`);
+      logger.verbose(`Testing: ${setupTesting}`);
+      logger.verbose(`Git: \${setupGit} `);
+    } else {
+      // Interactive mode - ask all questions
+      projectName = await getProjectName();
+      variant = await getProjectVariant();
+      styleMode = await getStyleMode();
+      installReactRouterDom = styleMode !== "none" ? await getRouterOption() : false;
+      setupCodeQuality = await getCodeQualityOption();
+      setupEnv = await getEnvOption();
+      setupUIComponents = styleMode === "tailwind + shadcn" ? await getUIComponentsOption() : false;
+      setupTesting = await getTestingOption();
+      setupGit = await getGitOption();
     }
+
+    // Dry run mode - show what would be created
+    if (cliOptions.dryRun) {
+      console.log(chalk.yellow("\n🔍 DRY RUN MODE - Nothing will be created\n"));
+      console.log(chalk.bold("Configuration:"));
+      console.log(`  Project Name: ${ chalk.cyan(projectName) } `);
+      console.log(`  Variant: ${ chalk.cyan(variant) } `);
+      console.log(`  Style Mode: ${ chalk.cyan(styleMode) } `);
+      console.log(`  Router: ${ chalk.cyan(installReactRouterDom ? 'Yes' : 'No') } `);
+      console.log(`  Code Quality: ${ chalk.cyan(setupCodeQuality ? 'Yes' : 'No') } `);
+      console.log(`  Environment: ${ chalk.cyan(setupEnv ? 'Yes' : 'No') } `);
+      console.log(`  UI Components: ${ chalk.cyan(setupUIComponents ? 'Yes' : 'No') } `);
+      console.log(`  Package Manager: ${ chalk.cyan(cliOptions.packageManager) } `);
+      console.log(`  Install Dependencies: ${ chalk.cyan(cliOptions.install ? 'Yes' : 'No') } `);
+
+      console.log(chalk.bold("\nCommands that would run:"));
+      console.log(`  ${ chalk.gray('npm create vite@latest') } ${ projectName } ${ chalk.gray('--template') } ${ variant } `);
+      if (cliOptions.install) {
+        console.log(`  ${ chalk.gray('cd') } ${ projectName } `);
+        console.log(`  ${ chalk.gray(cliOptions.packageManager) } install`);
+        if (styleMode !== "none") {
+          console.log(`  ${ chalk.gray(cliOptions.packageManager) } install - D tailwindcss @tailwindcss/vite`);
+        }
+if (styleMode === "tailwind + shadcn") {
+  console.log(`  ${chalk.gray('npx shadcn@latest init')}`);
+}
+if (installReactRouterDom) {
+  console.log(`  ${chalk.gray(cliOptions.packageManager)} install react-router-dom`);
+}
+      }
+
+console.log(chalk.yellow("\n✅ Dry run complete. No files were created.\n"));
+return;
+    }
+
+try {
+  logger.verbose("Creating Vite project...");
+  createViteProject(projectName, variant, cliOptions.packageManager);
+
+  process.chdir(projectName);
+  logger.debug(`Changed directory to: ${projectName}`);
+
+  if (cliOptions.install) {
+    installDependencies();
+  } else {
+    logger.warn("Skipping dependency installation (--no-install flag)");
+  }
+
+  switch (styleMode) {
+    case "tailwind":
+      await setupTailwindProject(variant, installReactRouterDom, cliOptions.install);
+      break;
+    case "tailwind + shadcn":
+      await setupTailwindShadcnProject(variant, installReactRouterDom, setupUIComponents, cliOptions.install);
+      break;
+    default:
+      await setupBasicProject(variant, installReactRouterDom);
+      break;
+  }
+
+  if (setupCodeQuality) {
+    await setupCodeQualityTools(projectName, cliOptions.install);
+  }
+
+  if (setupEnv) {
+    await setupEnvironmentVariables(variant, cliOptions.install);
+  }
+
+  if (installReactRouterDom) {
+    await setup404Page(variant, styleMode, cliOptions.install);
+  }
+
+  if (setupTesting) {
+    await setupTestingInfrastructure(variant, cliOptions.install);
+  }
+
+  if (setupGit) {
+    await setupGitRepository(projectName);
+  }
+
+  // Always setup Error Boundary for production safety
+  await setupErrorBoundary(variant, styleMode);
+
+  printNextSteps(projectName, cliOptions);
+} catch (error: any) {
+  logger.error("Error setting up the project:");
+  logger.error(error.message);
+  logger.debug(error.stack);
+  process.exit(1);
+}
   });
 
 program.parse(process.argv);
 
-function createViteProject(projectName: string, variant: Variant): void {
+function createViteProject(projectName: string, variant: Variant, packageManager: string = "npm"): void {
   console.log(chalk.blue(`\n📂 Creating project: ${projectName}...`));
   const safeProjectName = projectName.trim();
 
@@ -102,18 +253,28 @@ function createViteProject(projectName: string, variant: Variant): void {
     throw new Error("Project name cannot be empty");
   }
 
-  execSync(
-    `npm create vite@latest "${safeProjectName}" -- --template ${variant}`,
-    { stdio: "inherit" }
-  );
+  logger.verbose(`Using package manager: ${packageManager}`);
+  const createCmd = packageManager === "npm"
+    ? `npm create vite@latest "${safeProjectName}" -- --template ${variant}`
+    : packageManager === "yarn"
+      ? `yarn create vite "${safeProjectName}" --template ${variant}`
+      : `pnpm create vite "${safeProjectName}" --template ${variant}`;
+
+  logger.debug(`Running: ${createCmd}`);
+  execSync(createCmd, { stdio: "inherit" });
 }
 
 async function setupTailwindProject(
   variant: Variant,
-  installReactRouterDom: boolean
+  installReactRouterDom: boolean,
+  shouldInstall: boolean = true
 ): Promise<void> {
-  installTailwind();
-  ensureTypesNodeIfTs();
+  if (shouldInstall) {
+    installTailwind();
+    ensureTypesNodeIfTs();
+  } else {
+    logger.info("Tailwind installation skipped (--no-install)");
+  }
 
   const viteConfig = fs.existsSync("vite.config.ts")
     ? "vite.config.ts"
@@ -153,10 +314,16 @@ export default defineConfig({
 
 async function setupTailwindShadcnProject(
   variant: Variant,
-  installReactRouterDom: boolean
+  installReactRouterDom: boolean,
+  addUIComponents: boolean = true,
+  shouldInstall: boolean = true
 ): Promise<void> {
-  installTailwind();
-  ensureTypesNodeIfTs();
+  if (shouldInstall) {
+    installTailwind();
+    ensureTypesNodeIfTs();
+  } else {
+    logger.info("Tailwind installation skipped (--no-install)");
+  }
 
   const viteConfig = fs.existsSync("vite.config.ts")
     ? "vite.config.ts"
@@ -227,15 +394,18 @@ export default defineConfig({
   console.log(chalk.yellow("🧹 Removing default styles..."));
   removeFile("src/App.css");
 
-  installShadcn();
+  if (shouldInstall) {
+    installShadcn();
+  } else {
+    logger.info("ShadCN installation skipped (--no-install)");
+  }
 
   createProjectDirectories(".");
   createLayoutAndHome(variant, true);
   updateAppComponent(variant, installReactRouterDom, true);
 
   // Ask if user wants basic UI components
-  const addUIComponents = await getUIComponentsOption();
-  if (addUIComponents) {
+  if (addUIComponents && shouldInstall) {
     installBasicUIComponents();
   }
 
@@ -788,10 +958,14 @@ export default App;
   writeFile(appFile, appContent);
 }
 
-async function setupCodeQualityTools(projectName: string): Promise<void> {
+async function setupCodeQualityTools(projectName: string, shouldInstall: boolean = true): Promise<void> {
   console.log(chalk.yellow("\n🛡️  Setting up Code Quality tools..."));
 
-  installCodeQualityDependencies();
+  if (shouldInstall) {
+    installCodeQualityDependencies();
+  } else {
+    logger.info("Code quality tools installation skipped (--no-install)");
+  }
 
   // Write config files
   writeFile(".prettierrc", prettierConfig);
@@ -804,9 +978,11 @@ async function setupCodeQualityTools(projectName: string): Promise<void> {
   }
   writeFile(path.join(vscodeDir, "settings.json"), vsCodeSettings);
 
-  // Init Husky
-  initHusky();
-  writeFile(".husky/pre-commit", "npx lint-staged");
+  if (shouldInstall) {
+    // Init Husky
+    initHusky();
+    writeFile(".husky/pre-commit", "npx lint-staged");
+  }
 
   // Update package.json
   updatePackageJson(".", (json) => {
@@ -830,10 +1006,14 @@ async function setupCodeQualityTools(projectName: string): Promise<void> {
   console.log(chalk.green("✅ Code Quality tools configured successfully!"));
 }
 
-async function setupEnvironmentVariables(variant: Variant): Promise<void> {
+async function setupEnvironmentVariables(variant: Variant, shouldInstall: boolean = true): Promise<void> {
   console.log(chalk.yellow("\n🔐 Setting up Environment Variables..."));
 
-  installEnvDependencies();
+  if (shouldInstall) {
+    installEnvDependencies();
+  } else {
+    logger.info("Environment dependencies installation skipped (--no-install)");
+  }
 
   // Create .env.example
   writeFile(".env.example", envExample);
@@ -867,10 +1047,14 @@ async function setupEnvironmentVariables(variant: Variant): Promise<void> {
   console.log(chalk.yellow("   3. Import env from '@/config/env' to use validated env vars"));
 }
 
-async function setup404Page(variant: Variant, styleMode: string): Promise<void> {
+async function setup404Page(variant: Variant, styleMode: string, shouldInstall: boolean = true): Promise<void> {
   console.log(chalk.yellow("\n🚫 Setting up 404 Error Page..."));
 
-  installLottieReact();
+  if (shouldInstall) {
+    installLottieReact();
+  } else {
+    logger.info("Lottie React installation skipped (--no-install)");
+  }
 
   // Create assets directory
   const assetsDir = path.join("src", "assets");
@@ -926,8 +1110,97 @@ async function setupErrorBoundary(variant: Variant, styleMode: string): Promise<
   console.log(chalk.yellow("📝 Note: Wrap your App with <ErrorBoundary> in main.tsx/jsx"));
 }
 
-function printNextSteps(projectName: string): void {
+async function setupTestingInfrastructure(variant: Variant, shouldInstall: boolean = true): Promise<void> {
+  console.log(chalk.yellow("\n🧪 Setting up Testing Infrastructure..."));
+
+  if (shouldInstall) {
+    installTestingDependencies();
+  } else {
+    logger.info("Testing dependencies installation skipped (--no-install)");
+  }
+
+  // Create Vitest config
+  const vitestConfigFile = variant === "react-ts" ? "vitest.config.ts" : "vitest.config.js";
+  const vitestConfigContent = variant === "react-ts" ? vitestConfigTS : vitestConfigJS;
+  writeFile(vitestConfigFile, vitestConfigContent);
+
+  // Create test directory
+  const testDir = path.join("src", "test");
+  if (!fs.existsSync(testDir)) {
+    fs.mkdirSync(testDir, { recursive: true });
+  }
+
+  // Create test setup file
+  const testSetupFile = path.join(testDir, variant === "react-ts" ? "setup.ts" : "setup.js");
+  const testSetupContent = variant === "react-ts" ? testSetupTS : testSetupJS;
+  writeFile(testSetupFile, testSetupContent);
+
+  // Create example test file
+  const exampleTestFile = path.join(testDir, variant === "react-ts" ? "App.test.tsx" : "App.test.jsx");
+  const exampleTestContent = variant === "react-ts" ? exampleTestTS : exampleTestJS;
+  writeFile(exampleTestFile, exampleTestContent);
+
+  // Add test script to package.json
+  updatePackageJson(".", (json) => {
+    json.scripts = {
+      ...json.scripts,
+      "test": "vitest",
+      "test:ui": "vitest --ui",
+      "test:run": "vitest run",
+    };
+    return json;
+  });
+
+  console.log(chalk.green("✅ Testing infrastructure configured successfully!"));
+  console.log(chalk.yellow("📝 Run tests with: npm test"));
+  console.log(chalk.yellow("📝 Run tests with UI: npm run test:ui"));
+}
+
+async function setupGitRepository(projectName: string): Promise<void> {
+  console.log(chalk.yellow("\n🔧 Setting up Git repository..."));
+
+  try {
+    // Initialize git repository
+    execSync("git init", { stdio: "inherit" });
+    logger.verbose("Git repository initialized");
+
+    // Create .gitattributes for proper line endings
+    writeFile(".gitattributes", gitAttributesTemplate);
+    logger.verbose("Created .gitattributes file");
+
+    // Create initial commit
+    execSync("git add .", { stdio: "pipe" });
+    logger.verbose("Staged all files");
+
+    execSync(`git commit -m "Initial commit: ${projectName} project created with create-devi"`, { stdio: "pipe" });
+    logger.verbose("Created initial commit");
+
+    console.log(chalk.green("✅ Git repository initialized with initial commit!"));
+  } catch (error: any) {
+    logger.warn("Failed to initialize git repository. You can do it manually with: git init");
+    logger.debug(`Git error: ${error.message}`);
+  }
+}
+
+function printNextSteps(projectName: string, cliOptions: CLIOptions): void {
   console.log(chalk.yellow("\n👉 Done. Now run:\n"));
   console.log(chalk.cyan(`  cd ${projectName}`));
-  console.log(chalk.cyan(`  npm run dev\n`));
+
+  if (!cliOptions.install) {
+    const pm = cliOptions.packageManager;
+    const installCmd = pm === "npm" ? "npm install" : pm === "yarn" ? "yarn install" : "pnpm install";
+    console.log(chalk.cyan(`  ${installCmd}`));
+  }
+
+  const devCmd = cliOptions.packageManager === "npm"
+    ? "npm run dev"
+    : cliOptions.packageManager === "yarn"
+      ? "yarn dev"
+      : "pnpm dev";
+
+  console.log(chalk.cyan(`  ${devCmd}\n`));
+
+  if (!cliOptions.install) {
+    console.log(chalk.yellow("⚠️  Don't forget to install dependencies first!\n"));
+  }
 }
