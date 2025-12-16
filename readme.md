@@ -94,7 +94,7 @@ Options:
   -h, --help                       Display help information
   -t, --template <name>            Use a predefined template
   --no-install                     Skip dependency installation
-  -pm, --package-manager <pm>      Choose package manager (npm|yarn|pnpm)
+  -p, --package-manager <pm>       Choose package manager (npm|yarn|pnpm)
   --dry-run                        Show what would be created without creating
   --verbose                        Enable verbose logging
   --debug                          Enable debug logging
